@@ -65,7 +65,6 @@ export class PlanService {
   // paginated data plan
   async paginatedPlan( listQueryParam: PaginationOptionsInterface,
     filter: any, userPayload: UserInterface) {
-      console.log('noman');
       
     if (decrypt(userPayload.hashType) !== UserTypesEnum.ADMIN) {
      throw new BadRequestException('You are not allow to see any kind of plan')
