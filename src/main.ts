@@ -78,17 +78,17 @@ async function bootstrap() {
   app.use(helmet());
 
   //set basic auth for accessing swagger api
-  if (SWAGGER_ENVS.includes(process.env.NODE_ENV || 'development')) {
-    app.use(
-      ['/apidoc'],
-      basicAuth({
-        challenge: true,
-        users: {
-          [process.env.SWAGGER_USER]: process.env.SWAGGER_PASSWORD,
-        },
-      }),
-    );
-  }
+  // if (SWAGGER_ENVS.includes(process.env.NODE_ENV || 'development')) {
+  //   app.use(
+  //     ['/apidoc'],
+  //     basicAuth({
+  //       challenge: true,
+  //       users: {
+  //         [process.env.SWAGGER_USER]: process.env.SWAGGER_PASSWORD,
+  //       },
+  //     }),
+  //   );
+  // }
   //serve static file from directory
   app.use('/public', express.static(path.join(__dirname, '../..', 'public')));
 
