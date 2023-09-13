@@ -4,7 +4,6 @@ import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { ErrorMessage, UserTypesEnum } from 'src/authentication/common/enum';
 import { IS_PUBLIC_KEY } from 'src/authentication/utils/decorators';
-import { decrypt } from 'src/helper/crypto.helper';
 
 @Injectable()
 export class AdminGuard extends AuthGuard('jwt') {
@@ -34,7 +33,7 @@ export class AdminGuard extends AuthGuard('jwt') {
       throw new UnauthorizedException(ErrorMessage.UNAUTHORIZED);
     }
 
-    if (decrypt(user.hashType) != UserTypesEnum.ADMIN) {
+    if (user.hashType != UserTypesEnum.ADMIN) {
       throw new UnauthorizedException(ErrorMessage.UNAUTHORIZED);
     }
     return user;

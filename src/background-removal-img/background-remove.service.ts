@@ -5,7 +5,6 @@ import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/com
 import { RemoveBgResult, removeBackgroundFromImageFile  } from 'remove.bg';
 import { ErrorMessage, SubscriptionStatusEnum, UserTypesEnum } from 'src/authentication/common/enum';
 import { UserInterface } from 'src/authentication/common/interfaces';
-import { decrypt } from 'src/helper/crypto.helper';
 import { UnauthorizedException } from '@nestjs/common/exceptions';
 import { OrderService } from 'src/modules/user/order/order.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -28,7 +27,7 @@ export class BackgroundRemovalService {
   // background remove function
   async  myRemoveBgFunction(path: string, outputFile: string, userPayload: UserInterface) {    
     
-    if (decrypt(userPayload.hashType) !== UserTypesEnum.USER) {
+    if (userPayload.hashType !== UserTypesEnum.USER) {
       throw new UnauthorizedException(ErrorMessage.UNAUTHORIZED);
     }
 
