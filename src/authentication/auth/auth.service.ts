@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { encrypt } from 'src/helper/crypto.helper';
 import { AddHoursIntoDateTime, checkIsSameOrAfterNowDateTime } from 'src/helper/date-time-helper';
 import { QueueMailDto } from 'src/modules/queue-mail/queue-mail.dto';
 import { QueueMailService } from 'src/modules/queue-mail/queue-mail.service';
@@ -63,7 +64,7 @@ export class AuthService {
         tokens = await this.getTokens({
           id: insertData.id,
           email: insertData.email,
-          hashType: UserTypesEnum.USER,
+          hashType: encrypt(UserTypesEnum.USER),
         });
         await this.updateRtHashUser(
           {
@@ -109,7 +110,7 @@ export class AuthService {
     const tokens = await this.getTokens({
       id: user.id,
       email: user.email,
-      hashType: UserTypesEnum.USER,
+      hashType: encrypt(UserTypesEnum.USER),
     });
     await this.updateRtHashUser({ id: user.id }, tokens.refresh_token);
 
@@ -277,7 +278,7 @@ export class AuthService {
     const tokens = await this.getTokens({
       id: user.id,
       email: user.email,
-      hashType: (UserTypesEnum.USER),
+      hashType: encrypt(UserTypesEnum.USER),
     });
     await this.updateRtHashUser(user.id, tokens.refresh_token);
 
@@ -397,12 +398,12 @@ export class AuthService {
     }
 
     //update the password of the user
-    const edPassword = await this.hashPassword(
+    const encryptedPassword = await this.hashPassword(
       changeForgotPassDto.password,
     );
     const updatedData = await this.updateUserPasswordData(
       userData.id,
-      edPassword,
+      encryptedPassword,
     );
 
     //app sign in link
@@ -456,9 +457,9 @@ export class AuthService {
   }
 
   //update user password data
-  async updateUserPasswordData(userId: number, edPassword: string) {
+  async updateUserPasswordData(userId: number, encryptedPassword: string) {
     const updateData = {
-      password: edPassword,
+      password: encryptedPassword,
       passResetToken: null,
       passResetTokenExpireAt: null,
     };
@@ -711,7 +712,7 @@ export class AuthService {
           tokens = await this.getTokens({
             id: insertData.id,
             email: insertData.email,
-            hashType: (UserTypesEnum.ADMIN),
+            hashType: encrypt(UserTypesEnum.ADMIN),
           });
           await this.updateRtHashAdmin(
             {
@@ -746,7 +747,7 @@ export class AuthService {
     const tokens = await this.getTokens({
       id: systemUser.id,
       email: systemUser.email,
-      hashType: (UserTypesEnum.ADMIN),
+      hashType: encrypt(UserTypesEnum.ADMIN),
     });
     await this.updateRtHashAdmin({ id: systemUser.id }, tokens.refresh_token);
 
@@ -794,7 +795,7 @@ export class AuthService {
     const tokens = await this.getTokens({
       id: systemUser.id,
       email: systemUser.email,
-      hashType: (UserTypesEnum.ADMIN),
+      hashType: encrypt(UserTypesEnum.ADMIN),
     });
     await this.updateRtHashAdmin(systemUser.id, tokens.refresh_token);
 

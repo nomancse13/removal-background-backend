@@ -6,6 +6,7 @@ import { PlanEntity } from './entity';
 import { Pagination, PaginationOptionsInterface, UserInterface } from 'src/authentication/common/interfaces';
 import { PaginationDataDto, SoftDeleteDto } from 'src/authentication/common/dtos';
 import { ErrorMessage, StatusField, UserTypesEnum } from 'src/authentication/common/enum';
+import { decrypt } from 'src/helper/crypto.helper';
 import { BadRequestException } from '@nestjs/common';
 import { OrderEntity } from 'src/modules/user/order/entity/order.entity';
 
@@ -65,7 +66,7 @@ export class PlanService {
   async paginatedPlan( listQueryParam: PaginationOptionsInterface,
     filter: any, userPayload: UserInterface) {
       
-    if ((userPayload.hashType) !== UserTypesEnum.ADMIN) {
+    if (decrypt(userPayload.hashType) !== UserTypesEnum.ADMIN) {
      throw new BadRequestException('You are not allow to see any kind of plan')
     }
     const limit: number = listQueryParam.limit ? listQueryParam.limit : 10;
@@ -140,7 +141,7 @@ export class PlanService {
    // paginated data plan
    async paginatedPlanForUser(paginationDataDto: PaginationDataDto, userPayload: UserInterface) {
 
-    if ((userPayload.hashType) !== UserTypesEnum.USER) {
+    if (decrypt(userPayload.hashType) !== UserTypesEnum.USER) {
       
      throw new BadRequestException('You are not allow to see any kind of plan')
     }
