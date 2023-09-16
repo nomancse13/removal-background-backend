@@ -10,8 +10,8 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { DocumentBuilder } from '@nestjs/swagger/dist';
 import { ValidationError } from 'class-validator';
 import * as express from 'express';
-// import * as basicAuth from 'express-basic-auth';
-// import helmet from 'helmet';
+import * as basicAuth from 'express-basic-auth';
+import helmet from 'helmet';
 import * as path from 'path';
 import {
   initializeTransactionalContext,
@@ -75,7 +75,7 @@ async function bootstrap() {
   //   credentials: true,
   // });
 
-  // app.use(helmet());
+  app.use(helmet());
 
   //set basic auth for accessing swagger api
   // if (SWAGGER_ENVS.includes(process.env.NODE_ENV || 'development')) {
