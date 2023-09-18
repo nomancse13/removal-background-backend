@@ -31,6 +31,7 @@ import { UserInterface } from "src/authentication/common/interfaces";
 import { PlanService } from "src/modules/admin/plan/plan.service";
 import { OrderHistoryEntity } from "./entity/order-history.entity";
 import { PlanEntity } from "src/modules/admin/plan/entity";
+import { BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class OrderService {
@@ -48,12 +49,14 @@ export class OrderService {
   ) {}
 
   // create order for user
-  async createOrderLink(body: CreateOrderDto, userPayload: UserInterface) {
+  async createOrderLink(body: CreateOrderDto, userPayload: UserInterface) {    
+    const planInfo = await this.planService.getSinglePlanForAll(body.planId);
 
-    const planInfo = await this.planService.getSinglePlanForAll(body.planId)
-
-    const isOrderExist = await this.orderRepository.findOne({where: {userId: userPayload.id, subscriptionStatus: SubscriptionStatusEnum.COMPLETE}})
+    // const isOrderExist = await this.orderRepository.findOne({where: {userId: userPayload.id, subscriptionStatus: SubscriptionStatusEnum.COMPLETE}});
+    const isOrderExist = await this.orderRepository.findOne({where: {userId: userPayload.id, planId: body.planId}});
    
+    console.log(isOrderExist, 'isOrderExist');
+    
     const orderData = {
       userId: userPayload.id,
       planId: body.planId,
@@ -68,11 +71,12 @@ export class OrderService {
         planId: body.planId,
         subscriptionStatus: planInfo.name.toLowerCase() == 'free'? SubscriptionStatusEnum.COMPLETE : SubscriptionStatusEnum.PENDING,
       }
-      await this.orderRepository.update({ userId: userPayload.id }, updatedData);
+      await this.orderRepository.update({ userId: userPayload.id, planId: body.planId }, updatedData);
 
     }
     await this.orderHistoryRepository.save(orderData);
-    return `order confirm successfully!!!`
+
+    return `order confirm successfully!!!`;
   }
 
 //   // paginated data package
@@ -161,10 +165,12 @@ export class OrderService {
           .where(`order.userId = ${userId}`)
           .andWhere(`order.subscriptionStatus = '${ SubscriptionStatusEnum.COMPLETE}'`)
           .getOne();
-    
 
-    return data;
-  }
+          if(data){
+            return data;
+          }else{
+            throw new BadRequestException(`Data not Found!`)
+          }  }
 //   async getOrdersByUserId(userId: number) {
 //     const data = await this.orderRepository.find({
 //       where: {

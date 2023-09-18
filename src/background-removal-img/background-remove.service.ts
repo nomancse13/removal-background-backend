@@ -34,6 +34,9 @@ export class BackgroundRemovalService {
 
     const userOrderData: any = await this.orderService.getOrderByUserId(userPayload.id);
 
+    if(!userOrderData){
+      throw new BadRequestException(`You have not any kind of complete status of order! please complete status and then try again!!`);
+    }    
     const backgroundRemoveData = await this.backgroundRemoveRepository.findOne({where: {userId: userPayload.id, planId: userOrderData?.planId}});
 
     

@@ -59,7 +59,12 @@ export class PlanService {
       const data = await this.planRepository.findOne({
         where: { id: id},
       });
-      return data;
+      
+      if(data){
+        return data;
+      }else{
+        throw new BadRequestException(`Data not Found!`)
+      }
     }
 
   // paginated data plan
