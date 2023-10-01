@@ -1,29 +1,64 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req, HttpStatus } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Injectable, Res } from '@nestjs/common';
-import { Response } from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
+import { Request } from 'express';
+import { AtGuard } from './authentication/auth/guards';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
+  // fb token
+  // @UseGuards(AuthGuard('facebook'))
+  // @Get('/facebook')
+  // async facebookAuth() {
+  //   return HttpStatus.OK;
+  // }
 
-  @Get()
-  async getHello(@Res() res: Response) {
-    try {
-      const filePath = path.join(`d:/removal-background`, 'index.html');
+  // @UseGuards(AuthGuard('facebook'))
+  // @Get('/facebook/redirect')
+  // async fbAuthRedirect(@Req() req) {
+  //   console.log('noman');
 
-      console.log(filePath, 'fff');
-      
-      if (fs.existsSync(filePath)) {
-        res.sendFile(filePath);
-      } else {
-        res.status(404).send('File not found.');
-      }
-    } catch (error) {
-      console.error('Error sending file:', error);
-      res.status(500).send('Internal Server Error');
-    }
-  }
+  //   const data = await this.appService.facebookLogin(req);
+
+  //   console.log(data, 'ddata');
+
+  //   return data;
+  // }
+
+  // @Get('/facebook')
+  // @UseGuards(AuthGuard('facebook'))
+  // async facebookLogin(): Promise<any> {
+  //   return HttpStatus.OK;
+  // }
+
+  // @Get('/facebook/redirect')
+  // @UseGuards(AuthGuard('facebook'))
+  // async facebookLoginRedirect(@Req() req: Request): Promise<any> {
+  //   const data = await this.appService.facebookLogin(req);
+  //   console.log(data, 'ddaa');
+
+  //   return {
+  //     statusCode: HttpStatus.OK,
+  //     payload: data,
+  //   };
+  // }
+
+  // // google token
+  // @UseGuards(AuthGuard('google'))
+  // @Get()
+  // async googleAuth(@Req() req) {}
+
+  // @UseGuards(AuthGuard('google'))
+  // @Get('auth/callback')
+  // async googleAuthRedirect(@Req() req, @Res() res) {
+  //   const data = await this.appService.googleLogin(req, res);
+
+  //   console.log(data, 'ddata');
+
+  //   return data;
+  // }
 }

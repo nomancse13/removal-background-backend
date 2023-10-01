@@ -7,6 +7,7 @@ import { BackgroundRemovalController } from "./background-remove.controller";
 import { UserModule } from "src/modules/user/user.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { BackgroundRemoveEntity } from "./entity";
+import { AdminModule } from "src/modules/admin/admin.module";
 
 /**Authentication strategies */
 @Module({
@@ -14,7 +15,8 @@ import { BackgroundRemoveEntity } from "./entity";
     TypeOrmModule.forFeature([
         BackgroundRemoveEntity,
       ]),
-      UserModule
+      UserModule,
+      AdminModule
   ],
   controllers: [
     BackgroundRemovalController,

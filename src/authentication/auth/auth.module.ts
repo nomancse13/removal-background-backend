@@ -13,7 +13,12 @@ import { AdminModule } from 'src/modules/admin/admin.module';
 import { QueueMailModule } from 'src/modules/queue-mail/queue-mail.module';
 import { UserEntity } from 'src/modules/user/entities';
 import { UserModule } from 'src/modules/user/user.module';
-import { AtStrategy, RtStrategy } from './strategy';
+import {
+  AtStrategy,
+  FacebookStrategy,
+  GoogleStrategy,
+  RtStrategy,
+} from './strategy';
 import { SystemUserEntity } from 'src/modules/admin/entities';
 // import { AtStrategy, RtStrategy } from './strategy';
 
@@ -35,9 +40,16 @@ import { SystemUserEntity } from 'src/modules/admin/entities';
       inject: [ConfigService],
     }),
     QueueMailModule,
-AdminModule,  ],
+    AdminModule,
+  ],
   controllers: [AuthController],
-  providers: [AuthService, RtStrategy, AtStrategy],
+  providers: [
+    AuthService,
+    RtStrategy,
+    AtStrategy,
+    GoogleStrategy,
+    FacebookStrategy,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

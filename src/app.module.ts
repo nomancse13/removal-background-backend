@@ -14,6 +14,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerMiddleware } from './authentication/middleware';
 import { validate } from './authentication/auth/config/env.validation';
 import { QueueMailConsumer } from './modules/queue-mail/queue-mail.consumer';
+import { PublicModule } from './public/public.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -51,9 +53,14 @@ import { QueueMailConsumer } from './modules/queue-mail/queue-mail.consumer';
         path: 'admin',
         module: AdminModule,
       },
+      {
+        path: 'public',
+        module: PublicModule,
+      },
       
     ]),
-    BackgroundRemovalModule, AuthenticationModule, AdminModule, UserModule],
+    MulterModule.register({dest: './uploads', storage: './uploads'}),
+    BackgroundRemovalModule, AuthenticationModule, AdminModule, UserModule, PublicModule],
   controllers: [AppController],
   providers: [AppService, QueueMailConsumer],
 })

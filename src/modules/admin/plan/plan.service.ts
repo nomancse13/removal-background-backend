@@ -144,17 +144,18 @@ export class PlanService {
   }
 
    // paginated data plan
-   async paginatedPlanForUser(paginationDataDto: PaginationDataDto, userPayload: UserInterface) {
-
-    if (decrypt(userPayload.hashType) !== UserTypesEnum.USER) {
+   async paginatedPlanForUser( listQueryParam: PaginationOptionsInterface,
+    filter: any, userPayload: UserInterface) {
+   
+    if (decrypt(userPayload.hashType) !== UserTypesEnum.USER || decrypt(userPayload.hashType) !== UserTypesEnum.CLIENT) {
       
      throw new BadRequestException('You are not allow to see any kind of plan')
     }
-    const limit = paginationDataDto.pageSize ? paginationDataDto.pageSize : 10;
-    const page = paginationDataDto.pageNumber
-      ? paginationDataDto.pageNumber == 1
+    const limit: number = listQueryParam.limit ? listQueryParam.limit : 10;
+    const page: number = listQueryParam.page
+      ? +listQueryParam.page == 1
         ? 0
-        : paginationDataDto.pageNumber
+        : listQueryParam.page
       : 1;
 
     const [results, total] = await this.planRepository
@@ -167,26 +168,12 @@ export class PlanService {
       )
       .where(
         new Brackets((qb) => {
-          if (
-            paginationDataDto.filter &&
-            Object.keys(paginationDataDto.filter).length > 0
-          ) {
-            Object.keys(paginationDataDto.filter).forEach(function (key) {
-              if (paginationDataDto.filter[key] !== '') {
-                if (key === 'status') {
-                  qb.andWhere(
-                    `plan.${key} = '${paginationDataDto.filter[key]}'`,
-                  );
-                } else {
-                  qb.andWhere(
-                    `CAST(plan.${key} as VARCHAR) ILIKE ('%${paginationDataDto.filter[key]}%')`,
-                  );
-                }
-              }
-            });
+          if (filter) {
+            qb.where(`plan.name ILIKE ('%${filter}%')`);
           }
         }),
       )
+      .andWhere(`plan.status = '${StatusField.ACTIVE}'`)
       .select([
         `plan.status`,
         `plan.id`,
@@ -201,10 +188,7 @@ export class PlanService {
         `order.planId`,
         `order.subscriptionStatus`,
       ])
-      .orderBy(
-        `plan.${paginationDataDto.sortField}`,
-        paginationDataDto.sortOrder,
-      )
+      .orderBy('plan.id', 'DESC')
       .take(limit)
       .skip(page > 0 ? page * limit - limit : page)
       .getManyAndCount();

@@ -1,8 +1,18 @@
 /**dependencies */
-import { Controller, Post } from '@nestjs/common';
+import {
+  Controller,
+  Req,
+  Res,
+  Get,
+  UseGuards,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger/dist';
 import { UserService } from 'src/modules/user/user.service';
 import { AuthService } from './auth.service';
+import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
+
 /**services */
 /**guards */
 //swagger doc
@@ -19,7 +29,38 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
 
+  @Get('/facebook')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookLogin(): Promise<any> {
+    return HttpStatus.OK;
+  }
 
+  @Get('/facebook/redirect')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookLoginRedirect(@Req() req: Request): Promise<any> {
+    const data = await this.authService.facebookLogin(req);
+    console.log(data, 'ddaa');
+
+    return {
+      statusCode: HttpStatus.OK,
+      payload: data,
+    };
+  }
+
+  // google token
+  @UseGuards(AuthGuard('google'))
+  @Get()
+  async googleAuth(@Req() req) {}
+
+  @UseGuards(AuthGuard('google'))
+  @Get('callback')
+  async googleAuthRedirect(@Req() req, @Res() res) {
+    const data = await this.authService.googleLogin(req, res);
+
+    console.log(data, 'ddata');
+
+    return data;
+  }
 
   // @PublicRoute()
   // @Post('local/signin')

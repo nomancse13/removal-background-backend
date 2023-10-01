@@ -11,7 +11,7 @@ export class UserEntity extends CommonEntity {
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
-  @Column({ type: 'varchar', length: 100, unique: true })
+  @Column({ type: 'varchar', length: 100 })
   email: string;
 
   @Column({ type: 'varchar', length: 255 })
@@ -31,6 +31,9 @@ export class UserEntity extends CommonEntity {
     nullable: true,
   })
   gender: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  profileImgSrc: string;
 
   @Column({
     type: 'varchar',

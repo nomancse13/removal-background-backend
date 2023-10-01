@@ -200,7 +200,7 @@ export class PlanController {
   })
   @Get('get/all')
   @UseGuards(AdminGuard)
-  async packageData(
+  async planData(
     @Query() listQueryParam: PaginationOptionsInterface,
     @Query('filter') filter: any,
     @UserPayload() userPayload: UserInterface,

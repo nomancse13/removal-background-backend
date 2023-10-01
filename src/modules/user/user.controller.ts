@@ -1,14 +1,16 @@
-import { Controller, Post, Body, UseGuards, Get, Put, Delete } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, Post, Body, UseGuards, Get, Put, Delete, Param, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/authentication/auth/auth.service';
 import { AuthDto, ChangeForgotPassDto, ForgotPassDto, LoginDto, OtpVerifyDto, ResendOtpDto } from 'src/authentication/auth/dto';
 import { UpdateUserDto } from 'src/authentication/auth/dto/update-user.dto';
 import { AtGuard, RtGuard } from 'src/authentication/auth/guards';
 import { PaginationDataDto } from 'src/authentication/common/dtos';
 import { UserTypesEnum } from 'src/authentication/common/enum';
-import { UserInterface } from 'src/authentication/common/interfaces';
+import { PaginationOptionsInterface, UserInterface } from 'src/authentication/common/interfaces';
 import { PublicRoute, UserPayload } from 'src/authentication/utils/decorators';
 import { PlanService } from '../admin/plan/plan.service';
+import { CreateCustomPackageDto } from '../admin/price-fixing/dtos/create-custom-package.dto';
+import { PriceFixingService } from '../admin/price-fixing/price-fixing.service';
 
 //swagger doc
 @ApiTags('RB|User')
@@ -26,6 +28,7 @@ export class UserController {
   constructor(
     private readonly authService: AuthService,
     private readonly planService: PlanService,
+    private readonly priceFixingService: PriceFixingService,
   ) {}
 
   // user registration
@@ -329,7 +332,6 @@ export class UserController {
     return { message: 'Successful', result: data };
   }
 
-  
     // get all plan data for user with paginaiton
     @ApiBearerAuth('jwt')
     @UseGuards(AtGuard)
@@ -338,28 +340,109 @@ export class UserController {
       description:
         'this route is responsible for getting all plan data with pagination',
     })
-    @ApiBody({
-      type: PaginationDataDto,
-      description:
-        'How to get plan data with pagination body?... here is the example given below.',
-      examples: {
-        a: {
-          summary: 'default',
-          value: {
-            filter: {},
-            sortOrder: 'ASC || DESC',
-            sortField: 'id',
-            pageNumber: 1,
-            pageSize: 10,
-          } as unknown as PaginationDataDto,
-        },
-      },
+    @ApiQuery({
+      name: 'limit',
+      type: Number,
+      description: 'insert limit if you need',
+      required: false,
+    })
+    @ApiQuery({
+      name: 'page',
+      type: Number,
+      description: 'insert page if you need',
+      required: false,
+    })
+    @ApiQuery({
+      name: 'filter',
+      type: String,
+      description: 'insert filter if you need',
+      required: false,
     })
     @Post('plan/all')
-    async getPaginatedData(@Body() paginationDataDto: PaginationDataDto, @UserPayload() userPayload: UserInterface,
-    ) {
-      const data = await this.planService.paginatedPlanForUser(paginationDataDto, userPayload);
+    async packageData(
+      @Query() listQueryParam: PaginationOptionsInterface,
+      @Query('filter') filter: any,
+      @UserPayload() userPayload: UserInterface,
+    )     {
+      const data = await this.planService.paginatedPlanForUser(listQueryParam, userPayload, filter);
       return { message: 'successful!', result: data };
     }
+    
+  /**
+   * from user login to client
+   */
+  @ApiOperation({
+    summary: 'client login from user',
+    description:
+      'This route is responsible for getting token and login to client from user',
+  })
+  @ApiParam({
+    name: 'clientId',
+    type: Number,
+    description:
+      'for getting access token of a client required clientId',
+    required: true,
+  })
+  @UseGuards(AtGuard)
+  @Get('login/client/:clientId')
+  async loginToClient(@Param('clientId') clientId: number, @UserPayload() userPayload: UserInterface,) {
+    const data = await this.authService.clientLoginFromUser(clientId, userPayload);
+    return { message: 'Successful', result: data };
+  }
 
+  /**
+   * from client login to user
+   */
+  @ApiOperation({
+    summary: 'user login from client',
+    description:
+      'This route is responsible for getting token and login to user from client',
+  })
+  @ApiParam({
+    name: 'userId',
+    type: Number,
+    description:
+      'for getting access token of a client required userId',
+    required: true,
+  })
+  @UseGuards(AtGuard)
+  @Get('login/user/:userId')
+  async loginToUser(@Param('userId') userId: number, @UserPayload() userPayload: UserInterface,) {
+    const data = await this.authService.userLoginFromClient(userId, userPayload);
+    return { message: 'Successful', result: data };
+  }
+
+  
+  //   create new custom order
+  @ApiOperation({
+    summary: 'create new custom order',
+    description: 'this route is responsible for create new custom order',
+  })
+  @ApiBody({
+    type: CreateCustomPackageDto,
+    description:
+      'How to create new custom order with body?... here is the example given below!',
+    examples: {
+      a: {
+        summary: 'create new custom order by client',
+        value: {
+          totalCost: 5,
+          quantity: 5,
+        } as unknown as CreateCustomPackageDto,
+      },
+    },
+  })
+  @UseGuards(AtGuard)
+  @Post('custom/order')
+  async createCustomPackage(
+    @Body() createCustomPackageDto: CreateCustomPackageDto,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const data = await this.priceFixingService.createCustomOrder(
+      createCustomPackageDto,
+      userPayload,
+    );
+
+    return { message: 'successful!', result: data };
+  }
 }

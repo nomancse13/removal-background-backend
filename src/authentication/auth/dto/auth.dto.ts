@@ -4,11 +4,13 @@ import {
 } from '@nestjs/swagger/dist/decorators/api-property.decorator';
 import {
   IsDateString,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { UserTypesEnum } from 'src/authentication/common/enum';
 
 export class AuthDto {
   @ApiPropertyOptional()
@@ -30,6 +32,11 @@ export class AuthDto {
   @IsOptional()
   @IsString()
   address: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsEnum(UserTypesEnum)
+  userType: UserTypesEnum;
 
   @ApiPropertyOptional()
   @IsOptional()

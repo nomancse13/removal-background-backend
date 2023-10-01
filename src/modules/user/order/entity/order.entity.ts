@@ -1,5 +1,5 @@
 import { CommonEntity } from 'src/authentication/common';
-import { SubscriptionStatusEnum } from 'src/authentication/common/enum';
+import { SubscriptionStatusEnum, UserTypesEnum } from 'src/authentication/common/enum';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('order')
@@ -14,6 +14,9 @@ export class OrderEntity extends CommonEntity {
     type: 'bigint',
   })
   userId: number;
+
+  @Column({ type: 'varchar', length: 255})
+  userType: string;
 
   @Column({
     type: 'bigint',

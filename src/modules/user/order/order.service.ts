@@ -32,16 +32,14 @@ import { PlanService } from "src/modules/admin/plan/plan.service";
 import { OrderHistoryEntity } from "./entity/order-history.entity";
 import { PlanEntity } from "src/modules/admin/plan/entity";
 import { BadRequestException } from '@nestjs/common';
+import { decrypt } from "src/helper/crypto.helper";
 
 @Injectable()
 export class OrderService {
-  // constructor(@Inject(PaddleSDK) private readonly paddle: PaddleSDK) {}
 
   constructor(
     // private httpService: HttpService,
     private planService: PlanService,
-    // @InjectRepository(PackageEntity)
-    // private packageRepository: BaseRepository<PackageEntity>,
     @InjectRepository(OrderEntity)
     private orderRepository: BaseRepository<OrderEntity>,
     @InjectRepository(OrderHistoryEntity)
@@ -54,11 +52,10 @@ export class OrderService {
 
     // const isOrderExist = await this.orderRepository.findOne({where: {userId: userPayload.id, subscriptionStatus: SubscriptionStatusEnum.COMPLETE}});
     const isOrderExist = await this.orderRepository.findOne({where: {userId: userPayload.id, planId: body.planId}});
-   
-    console.log(isOrderExist, 'isOrderExist');
-    
+       
     const orderData = {
       userId: userPayload.id,
+      userType: decrypt(userPayload.hashType),
       planId: body.planId,
       expiredDate: null,
       packageDate: new Date(),

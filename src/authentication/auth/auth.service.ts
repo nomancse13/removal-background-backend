@@ -1,13 +1,20 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ForbiddenException, NotFoundException, ConflictException } from '@nestjs/common/exceptions';
+import {
+  ForbiddenException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common/exceptions';
 import { ConfigService } from '@nestjs/config';
 import * as randomToken from 'rand-token';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { encrypt } from 'src/helper/crypto.helper';
-import { AddHoursIntoDateTime, checkIsSameOrAfterNowDateTime } from 'src/helper/date-time-helper';
+import { decrypt, encrypt } from 'src/helper/crypto.helper';
+import {
+  AddHoursIntoDateTime,
+  checkIsSameOrAfterNowDateTime,
+} from 'src/helper/date-time-helper';
 import { QueueMailDto } from 'src/modules/queue-mail/queue-mail.dto';
 import { QueueMailService } from 'src/modules/queue-mail/queue-mail.service';
 import { BaseRepository } from 'typeorm-transactional-cls-hooked';
@@ -17,7 +24,12 @@ import { UserEntity } from 'src/modules/user/entities';
 import { UserService } from 'src/modules/user/user.service';
 import { ErrorMessage, StatusField, UserTypesEnum } from '../common/enum';
 import { Pagination, UserInterface } from '../common/interfaces';
-import { ChangeForgotPassDto, ForgotPassDto, OtpVerifyDto, ResendOtpDto } from './dto';
+import {
+  ChangeForgotPassDto,
+  ForgotPassDto,
+  OtpVerifyDto,
+  ResendOtpDto,
+} from './dto';
 import { Brackets } from 'typeorm';
 import { PaginationDataDto } from '../common/dtos';
 import { SystemUserEntity } from 'src/modules/admin/entities';
@@ -36,12 +48,12 @@ export class AuthService {
   ) {}
 
   // ********** GENERAL USER ********
-
   // sign up user
-  async signupLocal(dto: AuthDto): Promise<any> {    
+  async signupLocal(dto: AuthDto): Promise<any> {
     const dataCheck = await this.usersRepository.findOne({
       where: {
         email: dto.email,
+        userType: dto.userType,
       },
     });
 
@@ -64,7 +76,7 @@ export class AuthService {
         tokens = await this.getTokens({
           id: insertData.id,
           email: insertData.email,
-          hashType: encrypt(UserTypesEnum.USER),
+          hashType: encrypt(dto.userType),
         });
         await this.updateRtHashUser(
           {
@@ -84,6 +96,7 @@ export class AuthService {
       where: {
         email: loginDto.email,
         status: StatusField.DRAFT,
+        userType: loginDto.userType,
       },
     });
 
@@ -96,6 +109,7 @@ export class AuthService {
       where: {
         email: loginDto.email,
         status: StatusField.ACTIVE,
+        userType: loginDto.userType,
       },
     });
 
@@ -110,7 +124,7 @@ export class AuthService {
     const tokens = await this.getTokens({
       id: user.id,
       email: user.email,
-      hashType: encrypt(UserTypesEnum.USER),
+      hashType: encrypt(loginDto.userType),
     });
     await this.updateRtHashUser({ id: user.id }, tokens.refresh_token);
 
@@ -120,14 +134,52 @@ export class AuthService {
       mailData.toMail = user.email;
       mailData.subject = `RB: Login Message`;
       mailData.bodyHTML = `Test Message`;
-      
+
       // mailData.template = './login';
 
       // mailData.context = {
       //   imgSrc: mainImage,
       // };
       const test = await this.queueMailService.sendMail(mailData);
-    
+    }
+    return tokens;
+  }
+
+  // sign in for self user
+  async signinSelf(loginDto: LoginDto): Promise<any> {
+    const user = await this.usersRepository.findOne({
+      where: {
+        email: loginDto.email,
+        status: StatusField.ACTIVE,
+        userType: loginDto.userType,
+      },
+    });
+
+    if (!user) throw new ForbiddenException(ErrorMessage.NO_USER_FOUND);
+
+    const passwordMatches = user.password === loginDto.password;
+    if (!passwordMatches) throw new ForbiddenException('Invalid password!');
+
+    const tokens = await this.getTokens({
+      id: user.id,
+      email: user.email,
+      hashType: encrypt(loginDto.userType),
+    });
+    await this.updateRtHashUser({ id: user.id }, tokens.refresh_token);
+
+    if (tokens) {
+      // const mainImage = `../../../assets/png-file/logo.png`;
+      const mailData = new QueueMailDto();
+      mailData.toMail = user.email;
+      mailData.subject = `RB: Login Message`;
+      mailData.bodyHTML = `Test Message`;
+
+      // mailData.template = './login';
+
+      // mailData.context = {
+      //   imgSrc: mainImage,
+      // };
+      const test = await this.queueMailService.sendMail(mailData);
     }
     return tokens;
   }
@@ -144,7 +196,20 @@ export class AuthService {
     delete data.otpExpiresAt;
     return data;
   }
-  
+
+  // get user by id
+  async userById(userId: number) {
+    const data = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+    if (!data) throw new ForbiddenException(ErrorMessage.NO_USER_FOUND);
+    delete data.password;
+    delete data.hashedRt;
+    delete data.otpCode;
+    delete data.otpExpiresAt;
+    return data;
+  }
+
   //verify otp data
   async verifyOtp(otpDataDto: OtpVerifyDto) {
     const data = await this.usersRepository.findOne({
@@ -205,10 +270,7 @@ export class AuthService {
       throw new ForbiddenException('No user found!');
     } else {
       //update the if the user exist in the system but draft
-      await this.usersRepository.update(
-        { id: checkExisting.id },
-        otpData,
-      );
+      await this.usersRepository.update({ id: checkExisting.id }, otpData);
     }
 
     const userDataReg = {
@@ -272,7 +334,7 @@ export class AuthService {
       throw new ForbiddenException(ErrorMessage.NO_USER_FOUND);
 
     const rtMatches = await bcrypt.compare(rt, user.hashedRt);
-    
+
     if (!rtMatches) throw new ForbiddenException('Token not matches!');
 
     const tokens = await this.getTokens({
@@ -285,57 +347,57 @@ export class AuthService {
     return tokens;
   }
 
-    //   forgot password
-    async forgotPass(forgotPassDto: ForgotPassDto) {
-      const userData = await this.validateUserByEmail(forgotPassDto.email);
-  
-      //generate password reset token
-      const randomTokenString = randomToken.generate(20);
-      const paswordResetLink = `${
-        this.configService.get('APP_ENV') === 'development'
-          ? this.configService.get('PUBLIC_CDN')
-          : this.configService.get('PUBLIC_CDN')
-      }reset-password?passResetToken=${randomTokenString}`;
-      //if email validating fails
-      if (!userData) {
-        throw new NotFoundException(
-          `No user found with email associated ${forgotPassDto.email}`,
+  //   forgot password
+  async forgotPass(forgotPassDto: ForgotPassDto) {
+    const userData = await this.validateUserByEmail(forgotPassDto.email);
+
+    //generate password reset token
+    const randomTokenString = randomToken.generate(20);
+    const paswordResetLink = `${
+      this.configService.get('APP_ENV') === 'development'
+        ? this.configService.get('PUBLIC_CDN')
+        : this.configService.get('PUBLIC_CDN')
+    }reset-password?passResetToken=${randomTokenString}`;
+    //if email validating fails
+    if (!userData) {
+      throw new NotFoundException(
+        `No user found with email associated ${forgotPassDto.email}`,
+      );
+    }
+
+    //update the data for pass reset
+    const forgotPassRestUpdate = await this.updatePassResetToken(
+      forgotPassDto,
+      randomTokenString,
+    );
+
+    if (forgotPassRestUpdate && forgotPassRestUpdate.affected > 0) {
+      // const cdnLink = await this.configService.get('PUBLIC_CDN');
+      const mainImage = `../../../assets/png-file/logo.png`;
+
+      const mailData = new QueueMailDto();
+      mailData.toMail = userData.email;
+      mailData.subject = `Reset password instructions for RB account`;
+      mailData.template = './forgot-password';
+      mailData.context = {
+        name: `${userData.name}`,
+        resetLink: paswordResetLink,
+        imgSrc: mainImage,
+      };
+      //send password reset link
+      const sendMail = await this.queueMailService.sendMail(mailData);
+      // if email is not sent then send errors
+      if (sendMail != undefined) {
+        throw new ConflictException(
+          `${ErrorMessage.FAILED_TO_RESET} password!`,
         );
       }
-  
-      //update the data for pass reset
-      const forgotPassRestUpdate = await this.updatePassResetToken(
-        forgotPassDto,
-        randomTokenString,
-      );
-  
-      if (forgotPassRestUpdate && forgotPassRestUpdate.affected > 0) {
-        // const cdnLink = await this.configService.get('PUBLIC_CDN');
-        const mainImage = `../../../assets/png-file/logo.png`;
-  
-        const mailData = new QueueMailDto();
-        mailData.toMail = userData.email;
-        mailData.subject = `Reset password instructions for RB account`;
-        mailData.template = './forgot-password';
-        mailData.context = {
-          name: `${userData.name}`,
-          resetLink: paswordResetLink,
-          imgSrc: mainImage,
-        };
-        //send password reset link
-        const sendMail = await this.queueMailService.sendMail(mailData);
-        // if email is not sent then send errors
-        if (sendMail != undefined) {
-          throw new ConflictException(
-            `${ErrorMessage.FAILED_TO_RESET} password!`,
-          );
-        }
-      } else {
-        throw new ConflictException(`${ErrorMessage.FAILED_TO_RESET} password!`);
-      }
-      return forgotPassDto.email;
+    } else {
+      throw new ConflictException(`${ErrorMessage.FAILED_TO_RESET} password!`);
     }
-  
+    return forgotPassDto.email;
+  }
+
   //validate user by email
   async validateUserByEmail(email: string) {
     const userData = await this.usersRepository.findOne({
@@ -378,15 +440,13 @@ export class AuthService {
     return userData;
   }
 
-   //hash password
-   async hashPassword(password: string) {
+  //hash password
+  async hashPassword(password: string) {
     return bcrypt.hashSync(password, 10);
   }
 
   //change password by forgot password
-  async changePasswordByForgotPass(
-    changeForgotPassDto: ChangeForgotPassDto,
-  ) {
+  async changePasswordByForgotPass(changeForgotPassDto: ChangeForgotPassDto) {
     //validate pass reset token data and return user information from it
     const userData = await this.validatePassResetToken(changeForgotPassDto);
 
@@ -470,7 +530,9 @@ export class AuthService {
       .where('id = :id', { id: userId })
       .execute();
 
-      const updatedUser = await this.usersRepository.findOne({where: {id: userId}});
+    const updatedUser = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
 
     if (!updatedUser) {
       throw new NotFoundException(`${ErrorMessage.UPDATE_FAILED}`);
@@ -478,7 +540,7 @@ export class AuthService {
 
     return updatedUser;
   }
- 
+
   // update user
   async updateUserProfile(updateUserDto: any, userPayload: UserInterface) {
     updateUserDto['updatedAt'] = new Date();
@@ -489,7 +551,7 @@ export class AuthService {
         .createQueryBuilder('user')
         .where(`user.email='${updateUserDto.email}'`)
         .andWhere(`user.id != ${userPayload.id}`)
-        .getOne();        
+        .getOne();
 
       if (dataCheck) {
         return `Email you provided, already exist. Please fill another email.`;
@@ -508,7 +570,6 @@ export class AuthService {
 
     return `user profile updated successfully!!!`;
   }
-
 
   // get user by id
   async getUserById(userId: number) {
@@ -584,12 +645,11 @@ export class AuthService {
     });
   }
 
-
   // delete user
-  async deleteUser(userPayload: UserInterface){
-    const data = await this.usersRepository.delete({id: userPayload.id});
+  async deleteUser(userPayload: UserInterface) {
+    const data = await this.usersRepository.delete({ id: userPayload.id });
 
-    return `deleted successfully!!`
+    return `deleted successfully!!`;
   }
 
   // *******Common use api ******
@@ -654,7 +714,6 @@ export class AuthService {
     };
   }
 
-
   // *******For ADMIN USER******
 
   // update admin
@@ -688,47 +747,46 @@ export class AuthService {
     return 'Admin Profile updated successfully!';
   }
 
-    // sign up admin
-    async signupAdmin(dto: AuthDto): Promise<any> {
-      const dataCheck = await this.sytemUserRepository.findOne({
-        where: {
-          email: dto.email,
-        },
-      });
-  
-      if (dataCheck) {
-        return `this mail is already exist!`;
-      } else {
-        const secPass = await this.configService.get('GENERATE_SECRET_CODE');
-        dto['status'] = StatusField.ACTIVE;
-        dto.password =
-          dto && dto.password && dto.password.length > 1
-            ? bcrypt.hashSync(dto.password, 10)
-            : bcrypt.hashSync(secPass, 10);
-  
-        const insertData = await this.sytemUserRepository.save(dto);
-        let tokens;
-        if (insertData) {
-          tokens = await this.getTokens({
+  // sign up admin
+  async signupAdmin(dto: AuthDto): Promise<any> {
+    const dataCheck = await this.sytemUserRepository.findOne({
+      where: {
+        email: dto.email,
+      },
+    });
+
+    if (dataCheck) {
+      return `this mail is already exist!`;
+    } else {
+      const secPass = await this.configService.get('GENERATE_SECRET_CODE');
+      dto['status'] = StatusField.ACTIVE;
+      dto.password =
+        dto && dto.password && dto.password.length > 1
+          ? bcrypt.hashSync(dto.password, 10)
+          : bcrypt.hashSync(secPass, 10);
+
+      const insertData = await this.sytemUserRepository.save(dto);
+      let tokens;
+      if (insertData) {
+        tokens = await this.getTokens({
+          id: insertData.id,
+          email: insertData.email,
+          hashType: encrypt(UserTypesEnum.ADMIN),
+        });
+        await this.updateRtHashAdmin(
+          {
             id: insertData.id,
             email: insertData.email,
-            hashType: encrypt(UserTypesEnum.ADMIN),
-          });
-          await this.updateRtHashAdmin(
-            {
-              id: insertData.id,
-              email: insertData.email,
-            },
-            tokens.refresh_token,
-          );
-        }
-        return tokens;
+          },
+          tokens.refresh_token,
+        );
       }
+      return tokens;
     }
+  }
 
-    // sign in admin
+  // sign in admin
   async signinAdmin(loginDto: LoginDto): Promise<any> {
-
     const systemUser = await this.sytemUserRepository.findOne({
       where: {
         email: loginDto.email,
@@ -756,14 +814,13 @@ export class AuthService {
       const mailData = new QueueMailDto();
       mailData.toMail = systemUser.email;
       mailData.subject = `RB: Login To Admin`;
-      
+
       mailData.template = './login';
 
       mailData.context = {
         imgSrc: mainImage,
       };
       const test = await this.queueMailService.sendMail(mailData);
-    
     }
     return tokens;
   }
@@ -781,15 +838,17 @@ export class AuthService {
     return isUpdated ? true : false;
   }
 
-   // token refresh admin
-   async refreshTokensAdmin(userId: number, rt: string): Promise<any> {
-    const systemUser = await this.sytemUserRepository.findOne({ where: { id: userId } });
+  // token refresh admin
+  async refreshTokensAdmin(userId: number, rt: string): Promise<any> {
+    const systemUser = await this.sytemUserRepository.findOne({
+      where: { id: userId },
+    });
 
     if (!systemUser || !systemUser.hashedRt)
       throw new ForbiddenException(ErrorMessage.NO_USER_FOUND);
 
     const rtMatches = await bcrypt.compare(rt, systemUser.hashedRt);
-    
+
     if (!rtMatches) throw new ForbiddenException('Token not matches!');
 
     const tokens = await this.getTokens({
@@ -802,8 +861,8 @@ export class AuthService {
     return tokens;
   }
 
-   // update refresh token of admin
-   async updateRtHashAdmin(userPayload: any, rt: string) {
+  // update refresh token of admin
+  async updateRtHashAdmin(userPayload: any, rt: string) {
     const hash = await bcrypt.hash(rt, 10);
     const updatedData = {
       hashedRt: hash,
@@ -811,4 +870,69 @@ export class AuthService {
     await this.sytemUserRepository.update({ id: userPayload.id }, updatedData);
   }
 
+  // login to client from user
+  async clientLoginFromUser(id: number, userPayload: UserInterface) {
+    if (decrypt(userPayload.hashType) !== UserTypesEnum.USER) {
+      throw new BadRequestException('You are not allow to access this api');
+    }
+
+    const clinetData = await this.usersRepository.findOne({
+      where: {
+        id: id,
+        userType: UserTypesEnum.CLIENT,
+        status: 'Active',
+      },
+    });
+
+    const localLoginDto = {
+      email: clinetData.email,
+      password: clinetData.password,
+      userType: UserTypesEnum.CLIENT,
+    };
+
+    const loginToClient = await this.signinSelf(localLoginDto);
+    return loginToClient;
+  }
+
+  // login to user from client
+  async userLoginFromClient(id: number, userPayload: UserInterface) {
+    if (decrypt(userPayload.hashType) !== UserTypesEnum.CLIENT) {
+      throw new BadRequestException('You are not allow to access this api');
+    }
+
+    const userData = await this.usersRepository.findOne({
+      where: {
+        id: id,
+        userType: UserTypesEnum.USER,
+        status: 'Active',
+      },
+    });
+
+    const localLoginDto = {
+      email: userData.email,
+      password: userData.password,
+      userType: UserTypesEnum.USER,
+    };
+
+    const loginToClient = await this.signinSelf(localLoginDto);
+    return loginToClient;
+  }
+
+  //  facebook login
+  async facebookLogin(req: any) {
+    return req.user;
+
+    // if (!req.user) {
+    //   return `no user from google`;
+    // }
+    // return {
+    //   message: 'user info from google',
+    //   user: req,
+    // };
+  }
+
+  // google login
+  async googleLogin(req: any, res: Response) {
+    return req.user;
+  }
 }

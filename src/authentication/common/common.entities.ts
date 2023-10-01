@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { StatusField } from './enum';
+import { UserTypesEnum } from './enum/user-types.enum';
 
 export abstract class CommonEntity {
   @CreateDateColumn({ select: false })
@@ -19,10 +20,19 @@ export abstract class CommonEntity {
 
   @Column({
     type: 'enum',
-    enum: StatusField,
-    default: StatusField.ACTIVE,
+    enum: UserTypesEnum,
+    default: UserTypesEnum.ADMIN,
+    select: false,
   })
-  status: string;
+  createdType: string;
+
+  @Column({
+    type: 'enum',
+    enum: UserTypesEnum,
+    nullable: true,
+    select: false,
+  })
+  updatedType: string;
 
   @Column({ type: 'int', nullable: true, select: false })
   createdBy: number;
@@ -32,4 +42,11 @@ export abstract class CommonEntity {
 
   @Column({ type: 'int', nullable: true, select: false })
   deletedBy: number;
+
+  @Column({
+    type: 'enum',
+    enum: StatusField,
+    default: StatusField.ACTIVE,
+  })
+  status: string;
 }
