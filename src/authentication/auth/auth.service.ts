@@ -353,11 +353,13 @@ export class AuthService {
 
     //generate password reset token
     const randomTokenString = randomToken.generate(20);
-    const paswordResetLink = `${
-      this.configService.get('APP_ENV') === 'development'
-        ? this.configService.get('PUBLIC_CDN')
-        : this.configService.get('PUBLIC_CDN')
-    }reset-password?passResetToken=${randomTokenString}`;
+    // const paswordResetLink = `${
+    //   this.configService.get('APP_ENV') === 'development'
+    //     ? this.configService.get('PUBLIC_CDN')
+    //     : this.configService.get('PUBLIC_CDN')
+    // }reset-password?passResetToken=${randomTokenString}`;
+    const paswordResetLink = `
+      http://127.0.0.1:3000/user/change-password?passResetToken=${randomTokenString}`;
     //if email validating fails
     if (!userData) {
       throw new NotFoundException(
