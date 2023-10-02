@@ -37,8 +37,7 @@ import { PublicRoute, UserPayload } from 'src/authentication/utils/decorators';
 })
 export class AdminController {
   constructor(
-    private readonly authService: AuthService,
-    // private readonly userService: UserService,
+    private readonly authService: AuthService, // private readonly userService: UserService,
   ) {}
 
   // signup route
@@ -114,6 +113,15 @@ export class AdminController {
     return { message: 'Successful', result: data };
   }
 
+  @ApiBearerAuth('jwt')
+  @UseGuards(AdminGuard)
+  @Get()
+  async getUser(@UserPayload() user: UserInterface) {
+    const data = await this.authService.findSingleSystemUser(user);
+
+    return { message: 'Successful', result: data };
+  }
+
   // refresh the access token of admin
 
   @ApiBearerAuth('jwt')
@@ -128,7 +136,10 @@ export class AdminController {
     @UserPayload() user: UserInterface,
     @UserPayload('refreshToken') refreshToken: string,
   ): Promise<any> {
-    const data = await this.authService.refreshTokensAdmin(user.id, refreshToken);
+    const data = await this.authService.refreshTokensAdmin(
+      user.id,
+      refreshToken,
+    );
 
     return { message: 'Successful', result: data };
   }

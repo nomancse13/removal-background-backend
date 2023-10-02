@@ -65,6 +65,7 @@ export class AuthService {
       dto['otpCode'] = otpData.otpCode;
       dto['otpExpiresAt'] = otpData.otpExpiresAt;
       dto['status'] = StatusField.DRAFT;
+      dto['createdType'] = dto.userType;
       dto.password =
         dto && dto.password && dto.password.length > 1
           ? bcrypt.hashSync(dto.password, 10)
@@ -194,6 +195,17 @@ export class AuthService {
     delete data.hashedRt;
     delete data.otpCode;
     delete data.otpExpiresAt;
+    return data;
+  }
+
+  // get single system user
+  async findSingleSystemUser(userPayload: UserInterface) {
+    const data = await this.sytemUserRepository.findOne({
+      where: { id: userPayload.id },
+    });
+    if (!data) throw new ForbiddenException(ErrorMessage.NO_USER_FOUND);
+    delete data.password;
+    delete data.hashedRt;
     return data;
   }
 
