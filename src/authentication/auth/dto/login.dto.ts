@@ -1,5 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger/dist/decorators/api-property.decorator';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+} from '@nestjs/swagger/dist/decorators/api-property.decorator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { UserTypesEnum } from 'src/authentication/common/enum';
 
 export class LoginDto {
@@ -13,9 +16,9 @@ export class LoginDto {
   @IsNotEmpty()
   readonly password: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsEnum(UserTypesEnum, { each: true })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   readonly userType: UserTypesEnum;
 }
