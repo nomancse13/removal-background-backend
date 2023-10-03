@@ -134,7 +134,7 @@ export class BackgroundRemovalService {
 
     const result: RemoveBgResult = await removeBackgroundFromImageFile({
       path,
-      apiKey: 'TozfYk47N3yXX3J7YJUj45Fi', //GrUJJuuXGXofH45mEVFrWTy8
+      apiKey: 'GrUJJuuXGXofH45mEVFrWTy8', //GrUJJuuXGXofH45mEVFrWTy8
       size: 'regular',
       type: 'person',
       crop: true,

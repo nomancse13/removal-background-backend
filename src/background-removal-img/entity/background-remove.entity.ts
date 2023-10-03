@@ -23,4 +23,6 @@ export class BackgroundRemoveEntity extends CommonEntity {
   @Column({ type: 'bigint', nullable: true })
   quantity: number;
 
+  // @Column({ type: 'varchar', length: 255 })
+  // imgSrc: string;
 }
