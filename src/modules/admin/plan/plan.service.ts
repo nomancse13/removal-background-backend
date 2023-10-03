@@ -3,12 +3,25 @@ import { Brackets } from 'typeorm';
 import { BaseRepository } from 'typeorm-transactional-cls-hooked';
 import { CreatePlanDto, UpdatePlanDto } from './dtos';
 import { PlanEntity } from './entity';
-import { Pagination, PaginationOptionsInterface, UserInterface } from 'src/authentication/common/interfaces';
-import { PaginationDataDto, SoftDeleteDto } from 'src/authentication/common/dtos';
-import { ErrorMessage, StatusField, UserTypesEnum } from 'src/authentication/common/enum';
+import {
+  Pagination,
+  PaginationOptionsInterface,
+  UserInterface,
+} from 'src/authentication/common/interfaces';
+import {
+  PaginationDataDto,
+  SoftDeleteDto,
+} from 'src/authentication/common/dtos';
+import {
+  ErrorMessage,
+  StatusField,
+  UserTypesEnum,
+} from 'src/authentication/common/enum';
 import { decrypt } from 'src/helper/crypto.helper';
 import { BadRequestException } from '@nestjs/common';
 import { OrderEntity } from 'src/modules/user/order/entity/order.entity';
+import slugGenerator from 'src/helper/slugify.helper';
+import * as randToken from 'rand-token';
 
 export class PlanService {
   constructor(
@@ -19,6 +32,21 @@ export class PlanService {
   //   create plan
   async createPlan(createPlanDto: CreatePlanDto, userPayload: UserInterface) {
     createPlanDto['createdBy'] = userPayload.id;
+
+    let slug = slugGenerator(createPlanDto.name);
+    const check = await this.planRepository.findOne({
+      where: {
+        slug: slug,
+      },
+    });
+
+    if (check) {
+      slug =
+        slug +
+        '-' +
+        randToken.generate(4, 'abcdefghijklnmopqrstuvwxyz0123456789');
+    }
+    createPlanDto['slug'] = slug;
 
     const data = await this.planRepository.save(createPlanDto);
     return data;
@@ -53,26 +81,30 @@ export class PlanService {
     return data;
   }
 
-    // get single plan
+  // get single plan
 
-    async getSinglePlanForAll(id: number,) {
-      const data = await this.planRepository.findOne({
-        where: { id: id},
-      });
-      
-      if(data){
-        return data;
-      }else{
-        throw new BadRequestException(`Data not Found!`)
-      }
+  async getSinglePlanForAll(id: number) {
+    const data = await this.planRepository.findOne({
+      where: { id: id },
+    });
+
+    if (data) {
+      return data;
+    } else {
+      throw new BadRequestException(`Data not Found!`);
     }
+  }
 
   // paginated data plan
-  async paginatedPlan( listQueryParam: PaginationOptionsInterface,
-    filter: any, userPayload: UserInterface) {
-      
+  async paginatedPlan(
+    listQueryParam: PaginationOptionsInterface,
+    filter: any,
+    userPayload: UserInterface,
+  ) {
     if (decrypt(userPayload.hashType) !== UserTypesEnum.ADMIN) {
-     throw new BadRequestException('You are not allow to see any kind of plan')
+      throw new BadRequestException(
+        'You are not allow to see any kind of plan',
+      );
     }
     const limit: number = listQueryParam.limit ? listQueryParam.limit : 10;
     const page: number = listQueryParam.page
@@ -110,12 +142,12 @@ export class PlanService {
       id: id,
       createdBy: userPayload.id,
     });
-    
-    if(data.affected == 0){
-      throw new BadRequestException(`Failed to Delete!!`)
+
+    if (data.affected == 0) {
+      throw new BadRequestException(`Failed to Delete!!`);
     }
 
-    return `Delete Successfully!!`
+    return `Delete Successfully!!`;
   }
 
   // soft delete plan
@@ -143,13 +175,19 @@ export class PlanService {
       : ErrorMessage.DELETE_FAILED;
   }
 
-   // paginated data plan
-   async paginatedPlanForUser( listQueryParam: PaginationOptionsInterface,
-    filter: any, userPayload: UserInterface) {
-   
-    if (decrypt(userPayload.hashType) !== UserTypesEnum.USER || decrypt(userPayload.hashType) !== UserTypesEnum.CLIENT) {
-      
-     throw new BadRequestException('You are not allow to see any kind of plan')
+  // paginated data plan
+  async paginatedPlanForUser(
+    listQueryParam: PaginationOptionsInterface,
+    filter: any,
+    userPayload: UserInterface,
+  ) {
+    if (
+      decrypt(userPayload.hashType) !== UserTypesEnum.USER ||
+      decrypt(userPayload.hashType) !== UserTypesEnum.CLIENT
+    ) {
+      throw new BadRequestException(
+        'You are not allow to see any kind of plan',
+      );
     }
     const limit: number = listQueryParam.limit ? listQueryParam.limit : 10;
     const page: number = listQueryParam.page

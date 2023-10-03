@@ -33,7 +33,7 @@ import {
 import { Brackets } from 'typeorm';
 import { PaginationDataDto } from '../common/dtos';
 import { SystemUserEntity } from 'src/modules/admin/entities';
-
+import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class AuthService {
   constructor(
@@ -62,6 +62,7 @@ export class AuthService {
     } else {
       const secPass = await this.configService.get('GENERATE_SECRET_CODE');
       const otpData = await this.emailVerification(dto.email, dto.name);
+      dto['apiKey'] = uuidv4();
       dto['otpCode'] = otpData.otpCode;
       dto['otpExpiresAt'] = otpData.otpExpiresAt;
       dto['status'] = StatusField.DRAFT;

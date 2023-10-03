@@ -23,6 +23,7 @@ import { IpClientInterface } from 'src/authentication/common/interfaces/ip-clien
 import { ActivityLogService } from 'src/modules/admin/activity-log/activityLog.service';
 import imageSize from 'image-size';
 import Jimp from 'jimp';
+import { AuthService } from 'src/authentication/auth/auth.service';
 // import sharp from 'sharp';
 // import { S3 } from 'aws-sdk';
 // import * as path from 'path';
@@ -35,6 +36,7 @@ export class BackgroundRemovalService {
     private backgroundRemoveRepository: BaseRepository<BackgroundRemoveEntity>,
     @Inject(forwardRef(() => OrderService))
     private readonly orderService: OrderService,
+    private readonly authService: AuthService,
     @Inject(forwardRef(() => ActivityLogService))
     private readonly activityLogService: ActivityLogService,
   ) {}
@@ -161,6 +163,61 @@ export class BackgroundRemovalService {
     } else {
       throw new BadRequestException('background remove not working!!!!');
     }
+  }
+
+  // remove background with api key
+
+  // background remove function for public
+  async removeBgByApiKey(
+    path: string,
+    apiKey: string,
+    outputFile: string,
+    userPayload: UserInterface,
+  ) {
+    // const dimension = imageSize(path);
+    const userData = await this.authService.findUserById(userPayload);
+
+    if (userData.apiKey !== apiKey) {
+      throw new BadRequestException(
+        `your api key is not correct. please get the one.`,
+      );
+    }
+
+    if (userData.quantity >= 10) {
+      throw new BadRequestException(
+        `your api key is not correct. please get the one.`,
+      );
+    }
+
+    // // if (ipData > 6) {
+    // //   throw new BadRequestException(
+    // //     `Please register and purchase premium plan then enjoy the service.`,
+    // //   );
+    // // }
+    // const result: RemoveBgResult = await removeBackgroundFromImageFile({
+    //   path,
+    //   apiKey: 'GrUJJuuXGXofH45mEVFrWTy8', //GrUJJuuXGXofH45mEVFrWTy8
+    //   size: 'regular',
+    //   type: 'person',
+    //   crop: true,
+    //   scale: '50%',
+    //   outputFile,
+    // });
+    // if (result) {
+    //   const log = {
+    //     ipAddress: ipClientPayload.ip,
+    //     browser: ipClientPayload.browser,
+    //     userId: 0,
+    //   };
+    //   const image = await Jimp.read(Buffer.from(result.base64img, 'base64'));
+    //   image.resize(dimension.width, dimension.height);
+    //   const mainImage = await image.getBase64Async(Jimp.MIME_JPEG);
+    //   // console.log(mainImage, 'mainImage');
+    //   await this.activityLogService.entryLog(log);
+    //   return mainImage;
+    // } else {
+    //   throw new BadRequestException('background remove not working!!!!');
+    // }
   }
 
   // //upload to s3

@@ -70,4 +70,10 @@ export class UserEntity extends CommonEntity {
 
   @Column({ type: 'bigint', nullable: true })
   profileImageId: number;
+
+  @Column({ type: 'uuid', nullable: true })
+  apiKey: string;
+
+  @Column({ type: 'bigint', nullable: true })
+  quantity: number;
 }
