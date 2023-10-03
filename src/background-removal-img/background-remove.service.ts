@@ -126,11 +126,11 @@ export class BackgroundRemovalService {
       ipClientPayload.ip,
     );
 
-    if (ipData > 6) {
-      throw new BadRequestException(
-        `Please register and purchase premium plan then enjoy the service.`,
-      );
-    }
+    // if (ipData > 6) {
+    //   throw new BadRequestException(
+    //     `Please register and purchase premium plan then enjoy the service.`,
+    //   );
+    // }
 
     const result: RemoveBgResult = await removeBackgroundFromImageFile({
       path,
