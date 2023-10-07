@@ -24,6 +24,7 @@ import { ActivityLogService } from 'src/modules/admin/activity-log/activityLog.s
 import imageSize from 'image-size';
 import Jimp from 'jimp';
 import { AuthService } from 'src/authentication/auth/auth.service';
+import { CurrentDate } from 'src/helper/date-time-helper';
 // import sharp from 'sharp';
 // import { S3 } from 'aws-sdk';
 // import * as path from 'path';
@@ -128,15 +129,15 @@ export class BackgroundRemovalService {
       ipClientPayload.ip,
     );
 
-    // if (ipData > 6) {
-    //   throw new BadRequestException(
-    //     `Please register and purchase premium plan then enjoy the service.`,
-    //   );
-    // }
+    if (ipData > 6) {
+      throw new BadRequestException(
+        `Please register and purchase premium plan then enjoy the service.`,
+      );
+    }
 
     const result: RemoveBgResult = await removeBackgroundFromImageFile({
       path,
-      apiKey: 'GrUJJuuXGXofH45mEVFrWTy8', //GrUJJuuXGXofH45mEVFrWTy8
+      apiKey: 'GrUJJuuXGXofH45mEVFrWTy8', //YeECXB6tpkbiAomgHhZDg7rb, cg1afjGNXVHB9XSFe2cVV85F, ZiohBs9WmUm57ZHVThXyByUY, YSCw1Mmwr9KRN62gFQcJDnus
       size: 'regular',
       type: 'person',
       crop: true,
@@ -167,103 +168,53 @@ export class BackgroundRemovalService {
 
   // remove background with api key
 
-  // background remove function for public
-  async removeBgByApiKey(
-    path: string,
-    apiKey: string,
-    outputFile: string,
-    userPayload: UserInterface,
-  ) {
-    // const dimension = imageSize(path);
-    const userData = await this.authService.findUserById(userPayload);
+  async removeBgByApiKey(path: string, outputFile: string, apiKey: string) {
+    const userData = await this.authService.findUserByUId(apiKey);
 
-    if (userData.apiKey !== apiKey) {
-      throw new BadRequestException(
-        `your api key is not correct. please get the one.`,
-      );
-    }
+    const userOrderData: any = await this.orderService.getApiPlanOrderByUserId(
+      userData.id,
+    );
 
-    if (userData.quantity >= 10) {
-      throw new BadRequestException(
-        `your api key is not correct. please get the one.`,
-      );
-    }
+    console.log(userOrderData, 'userOrder');
 
-    // // if (ipData > 6) {
-    // //   throw new BadRequestException(
-    // //     `Please register and purchase premium plan then enjoy the service.`,
-    // //   );
-    // // }
-    // const result: RemoveBgResult = await removeBackgroundFromImageFile({
-    //   path,
-    //   apiKey: 'GrUJJuuXGXofH45mEVFrWTy8', //GrUJJuuXGXofH45mEVFrWTy8
-    //   size: 'regular',
-    //   type: 'person',
-    //   crop: true,
-    //   scale: '50%',
-    //   outputFile,
-    // });
-    // if (result) {
-    //   const log = {
-    //     ipAddress: ipClientPayload.ip,
-    //     browser: ipClientPayload.browser,
-    //     userId: 0,
-    //   };
-    //   const image = await Jimp.read(Buffer.from(result.base64img, 'base64'));
-    //   image.resize(dimension.width, dimension.height);
-    //   const mainImage = await image.getBase64Async(Jimp.MIME_JPEG);
-    //   // console.log(mainImage, 'mainImage');
-    //   await this.activityLogService.entryLog(log);
-    //   return mainImage;
-    // } else {
-    //   throw new BadRequestException('background remove not working!!!!');
+    const userCreate = userData.createdAt.toString();
+
+    const today = new Date(userCreate);
+
+    const priorDate = new Date(today.setDate(today.getDate() + 30));
+
+    const dateDiff = Date.parse(priorDate.toDateString()) - Date.now();
+
+    // const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+    //  HERE TASK WILL APPLY NEXT DAY
+
+    // if (!userOrderData) {
+    //   throw new BadRequestException(
+    //     `You have not any kind of complete status of order! please complete the subscription status and then try again!!`,
+    //   );
     // }
+
+    if (dateDiff <= 0) {
+      throw new BadRequestException(
+        `your free time access has been ended!!! please buy some credit and then enjoy the api service`,
+      );
+    }
+
+    const result: RemoveBgResult = await removeBackgroundFromImageFile({
+      path,
+      apiKey: 'GrUJJuuXGXofH45mEVFrWTy8', //YeECXB6tpkbiAomgHhZDg7rb, cg1afjGNXVHB9XSFe2cVV85F, ZiohBs9WmUm57ZHVThXyByUY, YSCw1Mmwr9KRN62gFQcJDnus
+      size: 'regular',
+      type: 'person',
+      crop: true,
+      scale: '50%',
+      outputFile,
+    });
+
+    if (result) {
+      return result.base64img;
+    } else {
+      throw new BadRequestException('background remove not working!!!!');
+    }
   }
-
-  // //upload to s3
-  // async uploadS3(files: any, folderName: string) {
-  //   const bucketS3 = 'Test Bucket';
-  //   //get aws s3 configuration
-  //   const s3 = await this.getS3Config();
-  //   const afterUploadData = [];
-  //   for (let i = 0; i < files.length; i++) {
-  //     //set upload parameter
-  //     const fileNameData = path.basename(
-  //       files[i].originalname,
-  //       path.extname(files[i].originalname),
-  //     );
-
-  //     const params = {
-  //       Bucket: bucketS3,
-  //       ACL: 'public-read',
-  //       Key: `${folderName}/${fileNameData}-${uuidv4()}${path.extname(
-  //         files[i].originalname,
-  //       )}`,
-  //       Body: Buffer.from(files[i].buffer, 'binary'),
-  //       ContentType: files[i].mimetype,
-  //     };
-  //     const uploadedInfo = await new Promise((resolve, reject) => {
-  //       //upload file
-  //       s3.upload(params, (err, data) => {
-  //         if (err) {
-  //           //throw error messages
-  //           reject(err.message);
-  //           throw new BadRequestException(`File Upload Failed!`);
-  //         }
-  //         resolve(data);
-  //       });
-  //     });
-  //     afterUploadData.push(uploadedInfo);
-  //   }
-  //   return afterUploadData;
-  // }
-
-  // //set aws s3 configuration
-  // async getS3Config() {
-  //   return new S3({
-  //     accessKeyId: "",
-  //     secretAccessKey: await this.configService.get('AWS_SECRET_KEY'),
-  //     region: await this.configService.get('AWS_REGION'),
-  //   });
-  // }
 }

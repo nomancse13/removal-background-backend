@@ -1,8 +1,33 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { PlanService } from './plan.service';
-import { CreatePlanDto, UpdatePlanDto } from './dtos';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { PaginationOptionsInterface, UserInterface } from 'src/authentication/common/interfaces';
+import {
+  CreateApiPlanDto,
+  CreatePlanDto,
+  UpdateApiPlanDto,
+  UpdatePlanDto,
+} from './dtos';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  PaginationOptionsInterface,
+  UserInterface,
+} from 'src/authentication/common/interfaces';
 import { UserPayload } from 'src/authentication/utils/decorators';
 import { PaginationDataDto } from 'src/authentication/common/dtos';
 import { AdminGuard } from 'src/authentication/auth/guards';
@@ -15,7 +40,7 @@ import { AdminGuard } from 'src/authentication/auth/guards';
   version: '1',
 })
 export class PlanController {
-    constructor(private readonly planService: PlanService) {}
+  constructor(private readonly planService: PlanService) {}
   //   // soft delete plan
   //   @ApiOperation({
   //     summary: 'soft delete plan',
@@ -48,131 +73,129 @@ export class PlanController {
   //       result: data,
   //     };
   //   }
-    //   create plan route
-    @ApiOperation({
-      summary: 'plan creation',
-      description: 'this route is responsible for create a plan',
-    })
-    @ApiBody({
-      type: CreatePlanDto,
-      description:
-        'How to create a plan with body?... here is the example given below:',
-      examples: {
-        a: {
-          summary: 'default',
-          value: {
-            name: 'test plan',
-            slug: 'test-plan',
-            description: 'Loem Ipsum...',
-            isActive: 1,
-            price: 23,
-            currency: 'AFD',
-            periodInterval: 5,
-            timePeriod: '2022-04-05 09:58:47',
-            timeInterval: 'days',
-            features: [
-              {
-                name: 'test',
-                description: 'Loem Ipsum...',
-                value: 123,
-              },
-              {
-                name: 'test2',
-                description: 'Loem Ipsum...',
-                value: 1234,
-              },
-            ],
-          } as unknown as CreatePlanDto,
+  //   create plan route
+  @ApiOperation({
+    summary: 'plan creation',
+    description: 'this route is responsible for create a plan',
+  })
+  @ApiBody({
+    type: CreatePlanDto,
+    description:
+      'How to create a plan with body?... here is the example given below:',
+    examples: {
+      a: {
+        summary: 'default',
+        value: {
+          name: 'test plan',
+          slug: 'test-plan',
+          description: 'Loem Ipsum...',
+          isActive: 1,
+          price: 23,
+          currency: 'AFD',
+          periodInterval: 5,
+          timePeriod: '2022-04-05 09:58:47',
+          timeInterval: 'days',
+          features: [
+            {
+              name: 'test',
+              description: 'Loem Ipsum...',
+              value: 123,
+            },
+            {
+              name: 'test2',
+              description: 'Loem Ipsum...',
+              value: 1234,
+            },
+          ],
+        } as unknown as CreatePlanDto,
+      },
+    },
+  })
+  @Post()
+  async createPlan(
+    @Body() createPlanDto: CreatePlanDto,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const data = await this.planService.createPlan(createPlanDto, userPayload);
+    return { message: 'Successful', result: data };
+  }
+
+  // update a plan by id
+  @ApiOperation({
+    summary: 'update plan by id',
+    description: 'this route is responsible for update a plan by id',
+  })
+  @ApiBody({
+    type: UpdatePlanDto,
+    description:
+      'How to update a plan by id?... here is the example given below!',
+    examples: {
+      a: {
+        summary: 'default',
+        value: {
+          name: 'test plan',
+          slug: 'test-plan',
+          description: 'Loem Ipsum...',
+          isActive: 1,
+          price: 23,
+          currency: 'AFD',
+          periodInterval: 5,
+          timePeriod: '2022-04-05 09:58:47',
+          timeInterval: 'days',
+          features: [
+            {
+              name: 'test',
+              description: 'Loem Ipsum...',
+              value: 123,
+            },
+            {
+              name: 'test2',
+              description: 'Loem Ipsum...',
+              value: 1234,
+            },
+          ],
         },
       },
-    })
-    @Post()
-    async createPlan(
-      @Body() createPlanDto: CreatePlanDto,
-      @UserPayload() userPayload: UserInterface,
-    ) {
-      const data = await this.planService.createPlan(createPlanDto, userPayload);
-      return { message: 'Successful', result: data };
-    }
-
-
-    // update a plan by id
-    @ApiOperation({
-      summary: 'update plan by id',
-      description: 'this route is responsible for update a plan by id',
-    })
-    @ApiBody({
-      type: UpdatePlanDto,
-      description:
-        'How to update a plan by id?... here is the example given below!',
-      examples: {
-        a: {
-          summary: 'default',
-          value: {
-            name: 'test plan',
-            slug: 'test-plan',
-            description: 'Loem Ipsum...',
-            isActive: 1,
-            price: 23,
-            currency: 'AFD',
-            periodInterval: 5,
-            timePeriod: '2022-04-05 09:58:47',
-            timeInterval: 'days',
-            features: [
-              {
-                name: 'test',
-                description: 'Loem Ipsum...',
-                value: 123,
-              },
-              {
-                name: 'test2',
-                description: 'Loem Ipsum...',
-                value: 1234,
-              },
-            ],
-          },
-        },
-      },
-    })
-    @ApiParam({
-      name: 'id',
-      type: Number,
-      description: 'for update a plan required id',
-      required: true,
-    })
-    @Patch(':id')
-    async update(
-      @Param('id') id: number,
-      @UserPayload() userPayload: UserInterface,
-      @Body() updatePlanDto: UpdatePlanDto,
-    ) {
-      const data = await this.planService.updatePlan(
-        id,
-        userPayload,
-        updatePlanDto,
-      );
-      return { message: 'successful!', result: data };
-    }
-    // get single plan by id
-    @ApiOperation({
-      summary: 'get single plan by id',
-      description: 'this route is responsible for getting single plan by id',
-    })
-    @ApiParam({
-      name: 'id',
-      type: Number,
-      description: 'For getting single plan required id',
-      required: true,
-    })
-    @Get(':id')
-    async singleGet(
-      @Param('id') id: number,
-      @UserPayload() userPayload: UserInterface,
-    ) {
-      const data = await this.planService.getSinglePlan(id, userPayload);
-      return { message: 'successful!', result: data };
-    }
-
+    },
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'for update a plan required id',
+    required: true,
+  })
+  @Patch(':id')
+  async update(
+    @Param('id') id: number,
+    @UserPayload() userPayload: UserInterface,
+    @Body() updatePlanDto: UpdatePlanDto,
+  ) {
+    const data = await this.planService.updatePlan(
+      id,
+      userPayload,
+      updatePlanDto,
+    );
+    return { message: 'successful!', result: data };
+  }
+  // get single plan by id
+  @ApiOperation({
+    summary: 'get single plan by id',
+    description: 'this route is responsible for getting single plan by id',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'For getting single plan required id',
+    required: true,
+  })
+  @Get(':id')
+  async singleGet(
+    @Param('id') id: number,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const data = await this.planService.getSinglePlan(id, userPayload);
+    return { message: 'successful!', result: data };
+  }
 
   // get all plan data with paginaiton
   @ApiOperation({
@@ -208,28 +231,182 @@ export class PlanController {
     const result = await this.planService.paginatedPlan(
       listQueryParam,
       filter,
-      userPayload
+      userPayload,
     );
 
     return { message: 'successful', result: result };
   }
-    // delete single plan
-    @ApiOperation({
-      summary: 'delete single plan by id',
-      description: 'this route is responsible for delete a single plan by id',
-    })
-    @ApiParam({
-      name: 'id',
-      type: Number,
-      description: 'delete single plan required id',
-      required: true,
-    })
-    @Delete(':id')
-    async deletePlan(
-      @Param('id') id: number,
-      @UserPayload() userPayload: UserInterface,
-    ) {
-      const data = await this.planService.deletePlan(id, userPayload);
-      return { message: 'successful!', result: data };
-    }
+  // delete single plan
+  @ApiOperation({
+    summary: 'delete single plan by id',
+    description: 'this route is responsible for delete a single plan by id',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'delete single plan required id',
+    required: true,
+  })
+  @Delete(':id')
+  async deletePlan(
+    @Param('id') id: number,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const data = await this.planService.deletePlan(id, userPayload);
+    return { message: 'successful!', result: data };
+  }
+
+  // *******Api Plan***********
+
+  //   create api plan route
+  @ApiOperation({
+    summary: 'plan creation',
+    description: 'this route is responsible for create an api plan',
+  })
+  @ApiBody({
+    type: CreateApiPlanDto,
+    description:
+      'How to create an api plan with body?... here is the example given below:',
+    examples: {
+      a: {
+        summary: 'default',
+        value: {
+          name: 'test plan',
+          slug: 'test-plan',
+          description: 'Loem Ipsum...',
+          price: 23,
+        } as unknown as CreateApiPlanDto,
+      },
+    },
+  })
+  @Post()
+  async createApiPlan(
+    @Body() createApiPlanDto: CreateApiPlanDto,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const data = await this.planService.createApiPlan(
+      createApiPlanDto,
+      userPayload,
+    );
+    return { message: 'Successful', result: data };
+  }
+
+  // update an api plan by id
+  @ApiOperation({
+    summary: 'update api plan by id',
+    description: 'this route is responsible for update api plan by id',
+  })
+  @ApiBody({
+    type: UpdateApiPlanDto,
+    description:
+      'How to update an api plan by id?... here is the example given below!',
+    examples: {
+      a: {
+        summary: 'default',
+        value: {
+          name: 'test plan',
+          slug: 'test-plan',
+          description: 'Loem Ipsum...',
+          price: 23,
+        },
+      },
+    },
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'for update a api plan required id',
+    required: true,
+  })
+  @Patch(':id')
+  async updateApiPlan(
+    @Param('id') id: number,
+    @UserPayload() userPayload: UserInterface,
+    @Body() updateApiPlanDto: UpdateApiPlanDto,
+  ) {
+    const data = await this.planService.updateApiPlan(
+      id,
+      userPayload,
+      updateApiPlanDto,
+    );
+    return { message: 'successful!', result: data };
+  }
+  // get single api plan by id
+  @ApiOperation({
+    summary: 'get single api plan by id',
+    description: 'this route is responsible for getting single api plan by id',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'For getting single api plan required id',
+    required: true,
+  })
+  @Get(':id')
+  async singleGetApiPlan(
+    @Param('id') id: number,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const data = await this.planService.getSingleApiPlan(id, userPayload);
+    return { message: 'successful!', result: data };
+  }
+
+  // get all api plan data with paginaiton
+  @ApiOperation({
+    summary: 'get all api plan data with pagination',
+    description:
+      'this route is responsible for getting all api plan data with pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    description: 'insert limit if you need',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    description: 'insert page if you need',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'filter',
+    type: String,
+    description: 'insert filter if you need',
+    required: false,
+  })
+  @Get('get/all')
+  @UseGuards(AdminGuard)
+  async apiPlanData(
+    @Query() listQueryParam: PaginationOptionsInterface,
+    @Query('filter') filter: any,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const result = await this.planService.paginatedApiPlan(
+      listQueryParam,
+      filter,
+      userPayload,
+    );
+
+    return { message: 'successful', result: result };
+  }
+  // delete single plan
+  @ApiOperation({
+    summary: 'delete single api plan by id',
+    description: 'this route is responsible for delete single api plan by id',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'delete single api plan required id',
+    required: true,
+  })
+  @Delete(':id')
+  async deleteApiPlan(
+    @Param('id') id: number,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const data = await this.planService.deleteApiPlan(id, userPayload);
+    return { message: 'successful!', result: data };
+  }
 }

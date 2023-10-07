@@ -12,6 +12,7 @@ import { OrderService } from './order/order.service';
 import { OrderEntity } from './order/entity/order.entity';
 import { BackgroundRemovalService } from '../../background-removal-img/background-remove.service';
 import { OrderHistoryEntity } from './order/entity/order-history.entity';
+import { ApiPlanOrderEntity } from './order/entity';
 /**controllers */
 /**services */
 /**Authentication strategies */
@@ -21,22 +22,14 @@ import { OrderHistoryEntity } from './order/entity/order-history.entity';
       UserEntity,
       OrderEntity,
       OrderHistoryEntity,
+      ApiPlanOrderEntity,
     ]),
     QueueMailModule,
     AdminModule,
     forwardRef(() => AuthModule),
   ],
-  controllers: [
-    UserController,
-    OrderController,
-  ],
-  providers: [
-    UserService,
-    OrderService,
-  ],
-  exports: [
-    UserService,
-    OrderService,
-  ],
+  controllers: [UserController, OrderController],
+  providers: [UserService, OrderService],
+  exports: [UserService, OrderService],
 })
 export class UserModule {}

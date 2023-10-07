@@ -198,6 +198,18 @@ export class AuthService {
     delete data.otpExpiresAt;
     return data;
   }
+  // get user by uniqueid
+  async findUserByUId(uniqueId: string) {
+    const data = await this.usersRepository.findOne({
+      where: { apiKey: uniqueId },
+    });
+    if (!data) throw new ForbiddenException(ErrorMessage.NO_USER_FOUND);
+    delete data.password;
+    delete data.hashedRt;
+    delete data.otpCode;
+    delete data.otpExpiresAt;
+    return data;
+  }
 
   // get single system user
   async findSingleSystemUser(userPayload: UserInterface) {

@@ -1,8 +1,13 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets } from 'typeorm';
 import { BaseRepository } from 'typeorm-transactional-cls-hooked';
-import { CreatePlanDto, UpdatePlanDto } from './dtos';
-import { PlanEntity } from './entity';
+import {
+  CreateApiPlanDto,
+  CreatePlanDto,
+  UpdateApiPlanDto,
+  UpdatePlanDto,
+} from './dtos';
+import { ApiPlanEntity, PlanEntity } from './entity';
 import {
   Pagination,
   PaginationOptionsInterface,
@@ -27,6 +32,8 @@ export class PlanService {
   constructor(
     @InjectRepository(PlanEntity)
     private planRepository: BaseRepository<PlanEntity>,
+    @InjectRepository(ApiPlanEntity)
+    private apiPlanRepository: BaseRepository<ApiPlanEntity>,
   ) {}
 
   //   create plan
@@ -238,4 +245,243 @@ export class PlanService {
       limit,
     });
   }
+
+  // ******* API PLAN CRUD ************
+
+  //   create api plan
+  async createApiPlan(
+    createApiPlanDto: CreateApiPlanDto,
+    userPayload: UserInterface,
+  ) {
+    createApiPlanDto['createdBy'] = userPayload.id;
+
+    let slug = slugGenerator(createApiPlanDto.name);
+    const check = await this.apiPlanRepository.findOne({
+      where: {
+        slug: slug,
+      },
+    });
+
+    if (check) {
+      slug =
+        slug +
+        '-' +
+        randToken.generate(4, 'abcdefghijklnmopqrstuvwxyz0123456789');
+    }
+    createApiPlanDto['slug'] = slug;
+
+    const data = await this.apiPlanRepository.save(createApiPlanDto);
+    return data;
+  }
+
+  // update api plan by id
+
+  async updateApiPlan(
+    id: number,
+    userPayload: UserInterface,
+    updateApiPlanDto: UpdateApiPlanDto,
+  ) {
+    updateApiPlanDto['updatedBy'] = userPayload.id;
+
+    const title = await this.apiPlanRepository.findOne({
+      select: ['id', 'name', 'slug'],
+      where: {
+        id: id,
+      },
+    });
+
+    if (!title || !title.slug) {
+      let slug = slugGenerator(updateApiPlanDto.name);
+      const check = await this.apiPlanRepository.findOne({
+        select: ['slug'],
+        where: {
+          slug: slug,
+        },
+      });
+
+      if (check) {
+        slug =
+          slug +
+          '-' +
+          randToken.generate(4, 'abcdefghijklnmopqrstuvwxyz0123456789');
+      }
+      updateApiPlanDto['slug'] = slug;
+    }
+    const updatedData = await this.apiPlanRepository
+      .createQueryBuilder()
+      .update(ApiPlanEntity, updateApiPlanDto)
+      .where(`id = ${id}`)
+      .execute();
+
+    return updatedData.affected == 1
+      ? 'updated successfully!'
+      : 'updated failed!';
+  }
+
+  // get single api plan
+
+  async getSingleApiPlan(id: number, userPayload: UserInterface) {
+    const data = await this.apiPlanRepository.findOne({
+      where: { id: id, createdBy: userPayload.id },
+    });
+    return data;
+  }
+
+  // get single plan
+
+  async getSingleApiPlanForAll(id: number) {
+    const data = await this.apiPlanRepository.findOne({
+      where: { id: id },
+    });
+
+    if (data) {
+      return data;
+    } else {
+      throw new BadRequestException(`Data not Found!`);
+    }
+  }
+
+  // paginated data api plan
+  async paginatedApiPlan(
+    listQueryParam: PaginationOptionsInterface,
+    filter: any,
+    userPayload: UserInterface,
+  ) {
+    if (decrypt(userPayload.hashType) !== UserTypesEnum.ADMIN) {
+      throw new BadRequestException(
+        'You are not allow to see any kind of plan',
+      );
+    }
+    const limit: number = listQueryParam.limit ? listQueryParam.limit : 10;
+    const page: number = listQueryParam.page
+      ? +listQueryParam.page == 1
+        ? 0
+        : listQueryParam.page
+      : 1;
+
+    const [results, total] = await this.apiPlanRepository
+      .createQueryBuilder('plan')
+      .where(
+        new Brackets((qb) => {
+          if (filter) {
+            qb.where(`plan.name ILIKE ('%${filter}%')`);
+          }
+        }),
+      )
+      .andWhere(`plan.status = '${StatusField.ACTIVE}'`)
+      .orderBy('plan.id', 'DESC')
+      .take(limit)
+      .skip(page > 0 ? page * limit - limit : page)
+      .getManyAndCount();
+
+    return new Pagination<ApiPlanEntity>({
+      results,
+      total,
+      currentPage: page === 0 ? 1 : page,
+      limit,
+    });
+  }
+
+  // delete api plan by id
+  async deleteApiPlan(id: number, userPayload: UserInterface) {
+    const data = await this.apiPlanRepository.delete({
+      id: id,
+      createdBy: userPayload.id,
+    });
+
+    if (data.affected == 0) {
+      throw new BadRequestException(`Failed to Delete!!`);
+    }
+
+    return `Delete Successfully!!`;
+  }
+
+  // soft delete plan
+
+  async softDeleteApiPlan(
+    softDeleteDto: SoftDeleteDto,
+    userPayload: UserInterface,
+  ) {
+    const updatedData = {
+      deletedAt: new Date(),
+      deletedBy: userPayload.id,
+      status: StatusField.DELETED,
+    };
+
+    const data = await this.apiPlanRepository
+      .createQueryBuilder()
+      .update(PlanEntity, updatedData)
+      .where('id IN (:...ids)', {
+        ids: softDeleteDto.ids,
+      })
+      .execute();
+
+    return data.affected
+      ? 'soft deleted successfully!'
+      : ErrorMessage.DELETE_FAILED;
+  }
+
+  // paginated data plan
+  // async paginatedApiPlanForUser(
+  //   listQueryParam: PaginationOptionsInterface,
+  //   filter: any,
+  //   userPayload: UserInterface,
+  // ) {
+  //   if (
+  //     decrypt(userPayload.hashType) !== UserTypesEnum.USER ||
+  //     decrypt(userPayload.hashType) !== UserTypesEnum.CLIENT
+  //   ) {
+  //     throw new BadRequestException(
+  //       'You are not allow to see any kind of plan',
+  //     );
+  //   }
+  //   const limit: number = listQueryParam.limit ? listQueryParam.limit : 10;
+  //   const page: number = listQueryParam.page
+  //     ? +listQueryParam.page == 1
+  //       ? 0
+  //       : listQueryParam.page
+  //     : 1;
+
+  //   const [results, total] = await this.apiPlanRepository
+  //     .createQueryBuilder('plan')
+  //     .leftJoinAndMapOne(
+  //       'plan.order',
+  //       OrderEntity,
+  //       'order',
+  //       `plan.id = order.planId AND order.userId = ${userPayload.id}`,
+  //     )
+  //     .where(
+  //       new Brackets((qb) => {
+  //         if (filter) {
+  //           qb.where(`plan.name ILIKE ('%${filter}%')`);
+  //         }
+  //       }),
+  //     )
+  //     .andWhere(`plan.status = '${StatusField.ACTIVE}'`)
+  //     .select([
+  //       `plan.status`,
+  //       `plan.id`,
+  //       `plan.name`,
+  //       `plan.slug`,
+  //       `plan.description`,
+  //       `plan.isActive`,
+  //       `plan.price`,
+  //       `plan.quantity`,
+  //       `plan.duration`,
+  //       `order.userId`,
+  //       `order.planId`,
+  //       `order.subscriptionStatus`,
+  //     ])
+  //     .orderBy('plan.id', 'DESC')
+  //     .take(limit)
+  //     .skip(page > 0 ? page * limit - limit : page)
+  //     .getManyAndCount();
+
+  //   return new Pagination<PlanEntity>({
+  //     results,
+  //     total,
+  //     currentPage: page === 0 ? 1 : page,
+  //     limit,
+  //   });
+  // }
 }

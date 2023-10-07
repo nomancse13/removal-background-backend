@@ -6,7 +6,7 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { AuthModule } from 'src/authentication/auth/auth.module';
 import { SystemUserEntity } from './entities';
-import { PlanEntity } from './plan/entity';
+import { ApiPlanEntity, PlanEntity } from './plan/entity';
 import { PlanService } from './plan/plan.service';
 import { PlanController } from './plan/plan.controller';
 import { ActivityLogEntity } from './activity-log/entity';
@@ -30,6 +30,7 @@ import { OrderEntity } from '../user/order/entity/order.entity';
       BlogEntity,
       PriceFixingEntity,
       OrderEntity,
+      ApiPlanEntity,
     ]),
     QueueMailModule,
     forwardRef(() => AuthModule),
@@ -39,14 +40,14 @@ import { OrderEntity } from '../user/order/entity/order.entity';
     PlanController,
     ActivityLogController,
     BlogController,
-    PriceFixingController
+    PriceFixingController,
   ],
   providers: [
     AdminService,
     PlanService,
     ActivityLogService,
     BlogService,
-    PriceFixingService
+    PriceFixingService,
   ],
   exports: [
     AdminService,

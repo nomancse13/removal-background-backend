@@ -9,20 +9,19 @@ import { StatusField } from './enum';
 import { UserTypesEnum } from './enum/user-types.enum';
 
 export abstract class CommonEntity {
-  @CreateDateColumn({ select: false })
+  @CreateDateColumn()
   createdAt: Timestamp;
 
-  @UpdateDateColumn({ nullable: true, select: false })
+  @UpdateDateColumn({ nullable: true })
   updatedAt: Date;
 
-  @DeleteDateColumn({ nullable: true, select: false })
+  @DeleteDateColumn({ nullable: true })
   deletedAt?: Timestamp;
 
   @Column({
     type: 'enum',
     enum: UserTypesEnum,
     default: UserTypesEnum.ADMIN,
-    select: false,
   })
   createdType: string;
 
@@ -30,17 +29,16 @@ export abstract class CommonEntity {
     type: 'enum',
     enum: UserTypesEnum,
     nullable: true,
-    select: false,
   })
   updatedType: string;
 
-  @Column({ type: 'int', nullable: true, select: false })
+  @Column({ type: 'int', nullable: true })
   createdBy: number;
 
-  @Column({ type: 'int', nullable: true, select: false })
+  @Column({ type: 'int', nullable: true })
   updatedBy: number;
 
-  @Column({ type: 'int', nullable: true, select: false })
+  @Column({ type: 'int', nullable: true })
   deletedBy: number;
 
   @Column({
