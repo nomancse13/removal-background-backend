@@ -189,7 +189,7 @@ export class PlanService {
     userPayload: UserInterface,
   ) {
     if (
-      decrypt(userPayload.hashType) !== UserTypesEnum.USER ||
+      decrypt(userPayload.hashType) !== UserTypesEnum.USER &&
       decrypt(userPayload.hashType) !== UserTypesEnum.CLIENT
     ) {
       throw new BadRequestException(

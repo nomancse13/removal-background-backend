@@ -1,12 +1,39 @@
-import { Controller, Post, Body, UseGuards, Get, Put, Delete, Param, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+  Put,
+  Delete,
+  Param,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthService } from 'src/authentication/auth/auth.service';
-import { AuthDto, ChangeForgotPassDto, ForgotPassDto, LoginDto, OtpVerifyDto, ResendOtpDto } from 'src/authentication/auth/dto';
+import {
+  AuthDto,
+  ChangeForgotPassDto,
+  ForgotPassDto,
+  LoginDto,
+  OtpVerifyDto,
+  ResendOtpDto,
+} from 'src/authentication/auth/dto';
 import { UpdateUserDto } from 'src/authentication/auth/dto/update-user.dto';
 import { AtGuard, RtGuard } from 'src/authentication/auth/guards';
 import { PaginationDataDto } from 'src/authentication/common/dtos';
 import { UserTypesEnum } from 'src/authentication/common/enum';
-import { PaginationOptionsInterface, UserInterface } from 'src/authentication/common/interfaces';
+import {
+  PaginationOptionsInterface,
+  UserInterface,
+} from 'src/authentication/common/interfaces';
 import { PublicRoute, UserPayload } from 'src/authentication/utils/decorators';
 import { PlanService } from '../admin/plan/plan.service';
 import { CreateCustomPackageDto } from '../admin/price-fixing/dtos/create-custom-package.dto';
@@ -24,7 +51,6 @@ import { PriceFixingService } from '../admin/price-fixing/price-fixing.service';
   version: '1',
 })
 export class UserController {
-
   constructor(
     private readonly authService: AuthService,
     private readonly planService: PlanService,
@@ -40,7 +66,6 @@ export class UserController {
     return { message: 'Successful', result: data };
   }
 
-  
   //verify otp data
   @ApiOperation({
     summary: 'verify email otp code',
@@ -67,9 +92,8 @@ export class UserController {
     return { message: 'successful', result: data };
   }
 
-  
-   //resend otp code
-   @ApiOperation({
+  //resend otp code
+  @ApiOperation({
     summary: 'resend user otp code',
     description: 'this route is responsible for resend otp code',
   })
@@ -88,11 +112,10 @@ export class UserController {
     },
   })
   @Post('resend/otp-code')
-  async resendOtp(@Body() resendOtpDto: ResendOtpDto) {    
+  async resendOtp(@Body() resendOtpDto: ResendOtpDto) {
     const data = await this.authService.resendOtp(resendOtpDto);
     return { message: 'successful', result: data };
   }
-
 
   @PublicRoute()
   @Post('local/signin')
@@ -100,7 +123,7 @@ export class UserController {
     const data = await this.authService.signinLocal(dto);
     return { message: 'Successful', result: data };
   }
-  
+
   @ApiBearerAuth('jwt')
   @UseGuards(AtGuard)
   @Get()
@@ -110,7 +133,6 @@ export class UserController {
     return { message: 'Successful', result: data };
   }
 
-  
   // pagination all user data
   @ApiBearerAuth('jwt')
   @ApiOperation({
@@ -151,7 +173,6 @@ export class UserController {
     };
   }
 
-  
   /**
    *  UPDATE USER Profile
    */
@@ -183,7 +204,7 @@ export class UserController {
   async updateUser(
     @Body() updateUserDto: UpdateUserDto,
     @UserPayload() userPayload: UserInterface,
-  ) {    
+  ) {
     const data = await this.authService.updateUserProfile(
       updateUserDto,
       userPayload,
@@ -200,8 +221,6 @@ export class UserController {
 
     return { message: 'Successful', result: data };
   }
-
-
 
   // // change password
   // @ApiBearerAuth('jwt')
@@ -289,9 +308,8 @@ export class UserController {
   })
   @Post('change/password')
   async changeForgotPassword(@Body() changeForgotPassDto: ChangeForgotPassDto) {
-    const data = await this.authService.changePasswordByForgotPass(
-      changeForgotPassDto,
-    );
+    const data =
+      await this.authService.changePasswordByForgotPass(changeForgotPassDto);
     return { message: 'successful', result: data };
   }
 
@@ -303,9 +321,7 @@ export class UserController {
     description: 'this route is responsible for logout from an subscriber user',
   })
   @Post('logout')
-  async logout(
-    @UserPayload() user: UserInterface,
-  ) {
+  async logout(@UserPayload() user: UserInterface) {
     const data = await this.authService.logout(user);
 
     return { message: 'Successful', result: data };
@@ -332,42 +348,46 @@ export class UserController {
     return { message: 'Successful', result: data };
   }
 
-    // get all plan data for user with paginaiton
-    @ApiBearerAuth('jwt')
-    @UseGuards(AtGuard)
-    @ApiOperation({
-      summary: 'get all plan data with pagination',
-      description:
-        'this route is responsible for getting all plan data with pagination',
-    })
-    @ApiQuery({
-      name: 'limit',
-      type: Number,
-      description: 'insert limit if you need',
-      required: false,
-    })
-    @ApiQuery({
-      name: 'page',
-      type: Number,
-      description: 'insert page if you need',
-      required: false,
-    })
-    @ApiQuery({
-      name: 'filter',
-      type: String,
-      description: 'insert filter if you need',
-      required: false,
-    })
-    @Post('plan/all')
-    async packageData(
-      @Query() listQueryParam: PaginationOptionsInterface,
-      @Query('filter') filter: any,
-      @UserPayload() userPayload: UserInterface,
-    )     {
-      const data = await this.planService.paginatedPlanForUser(listQueryParam, userPayload, filter);
-      return { message: 'successful!', result: data };
-    }
-    
+  // get all plan data for user with paginaiton
+  @ApiBearerAuth('jwt')
+  @UseGuards(AtGuard)
+  @ApiOperation({
+    summary: 'get all plan data with pagination',
+    description:
+      'this route is responsible for getting all plan data with pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    description: 'insert limit if you need',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    description: 'insert page if you need',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'filter',
+    type: String,
+    description: 'insert filter if you need',
+    required: false,
+  })
+  @Post('plan/all')
+  async packageData(
+    @Query() listQueryParam: PaginationOptionsInterface,
+    @Query('filter') filter: any,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const data = await this.planService.paginatedPlanForUser(
+      listQueryParam,
+      filter,
+      userPayload,
+    );
+    return { message: 'successful!', result: data };
+  }
+
   /**
    * from user login to client
    */
@@ -379,14 +399,19 @@ export class UserController {
   @ApiParam({
     name: 'clientId',
     type: Number,
-    description:
-      'for getting access token of a client required clientId',
+    description: 'for getting access token of a client required clientId',
     required: true,
   })
   @UseGuards(AtGuard)
   @Get('login/client/:clientId')
-  async loginToClient(@Param('clientId') clientId: number, @UserPayload() userPayload: UserInterface,) {
-    const data = await this.authService.clientLoginFromUser(clientId, userPayload);
+  async loginToClient(
+    @Param('clientId') clientId: number,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const data = await this.authService.clientLoginFromUser(
+      clientId,
+      userPayload,
+    );
     return { message: 'Successful', result: data };
   }
 
@@ -401,18 +426,22 @@ export class UserController {
   @ApiParam({
     name: 'userId',
     type: Number,
-    description:
-      'for getting access token of a client required userId',
+    description: 'for getting access token of a client required userId',
     required: true,
   })
   @UseGuards(AtGuard)
   @Get('login/user/:userId')
-  async loginToUser(@Param('userId') userId: number, @UserPayload() userPayload: UserInterface,) {
-    const data = await this.authService.userLoginFromClient(userId, userPayload);
+  async loginToUser(
+    @Param('userId') userId: number,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const data = await this.authService.userLoginFromClient(
+      userId,
+      userPayload,
+    );
     return { message: 'Successful', result: data };
   }
 
-  
   //   create new custom order
   @ApiOperation({
     summary: 'create new custom order',
