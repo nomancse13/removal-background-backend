@@ -133,46 +133,6 @@ export class UserController {
     return { message: 'Successful', result: data };
   }
 
-  // pagination all user data
-  @ApiBearerAuth('jwt')
-  @ApiOperation({
-    summary: 'pagination of all user data',
-    description:
-      'this route is responsible for showing paginated all user data',
-  })
-  @ApiBody({
-    type: PaginationDataDto,
-    description:
-      'How to paginate get all data with pagination?... here is the example given below!',
-    examples: {
-      a: {
-        summary: 'default',
-        value: {
-          filter: {},
-          sortOrder: 'ASC',
-          sortField: 'id',
-          pageNumber: 1,
-          pageSize: 10,
-        } as unknown as PaginationDataDto,
-      },
-    },
-  })
-  @UseGuards(AtGuard)
-  @Post('all/user')
-  async getAllData(
-    @Body() paginationDataDto: PaginationDataDto,
-    @UserPayload() userPayload: UserInterface,
-  ) {
-    const data = await this.authService.findAllUser(
-      paginationDataDto,
-      userPayload,
-    );
-    return {
-      message: 'successful!',
-      result: data,
-    };
-  }
-
   /**
    *  UPDATE USER Profile
    */

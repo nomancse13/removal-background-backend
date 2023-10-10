@@ -1,16 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SubscriptionStatusEnum } from 'src/authentication/common/enum';
+import {
+  SubscriptionStatusEnum,
+  UserTypesEnum,
+} from 'src/authentication/common/enum';
 import { OrderEntity } from './entity/order.entity';
 import { BaseRepository } from 'typeorm-transactional-cls-hooked';
 import { CreateOrderDto } from './dtos';
-import { UserInterface } from 'src/authentication/common/interfaces';
+import {
+  Pagination,
+  PaginationOptionsInterface,
+  UserInterface,
+} from 'src/authentication/common/interfaces';
 import { PlanService } from 'src/modules/admin/plan/plan.service';
 import { OrderHistoryEntity } from './entity/order-history.entity';
 import { PlanEntity } from 'src/modules/admin/plan/entity';
 import { BadRequestException } from '@nestjs/common';
 import { decrypt } from 'src/helper/crypto.helper';
 import { ApiPlanOrderEntity } from './entity';
+import { Brackets } from 'typeorm';
+import { UserEntity } from '../entities';
 
 @Injectable()
 export class OrderService {
@@ -552,5 +561,51 @@ export class OrderService {
     } else {
       throw new BadRequestException(`Data not Found!`);
     }
+  }
+
+  // find all order
+  async findAllOrder(
+    listQueryParam: PaginationOptionsInterface,
+    filter: any,
+    userPayload: UserInterface,
+  ) {
+    if (decrypt(userPayload.hashType) !== UserTypesEnum.ADMIN) {
+      throw new BadRequestException(
+        'You are not allow to see any kind of Blog',
+      );
+    }
+    const limit: number = listQueryParam.limit ? listQueryParam.limit : 10;
+    const page: number = listQueryParam.page
+      ? +listQueryParam.page == 1
+        ? 0
+        : listQueryParam.page
+      : 1;
+
+    const [results, total] = await this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndMapOne(
+        'order.user',
+        UserEntity,
+        'user',
+        `order.userId = user.id`,
+      )
+      .where(
+        new Brackets((qb) => {
+          if (filter) {
+            qb.where(`user.name ILIKE ('%${filter}%')`);
+          }
+        }),
+      )
+      .orderBy('order.id', 'DESC')
+      .take(limit)
+      .skip(page > 0 ? page * limit - limit : page)
+      .getManyAndCount();
+
+    return new Pagination<OrderEntity>({
+      results,
+      total,
+      currentPage: page === 0 ? 1 : page,
+      limit,
+    });
   }
 }

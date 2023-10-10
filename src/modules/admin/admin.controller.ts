@@ -24,8 +24,13 @@ import {
 import { AuthService } from 'src/authentication/auth/auth.service';
 import { AuthDto, LoginDto } from 'src/authentication/auth/dto';
 import { AdminGuard, RtGuard } from 'src/authentication/auth/guards';
-import { UserInterface } from 'src/authentication/common/interfaces';
+import { PaginationDataDto } from 'src/authentication/common/dtos';
+import {
+  PaginationOptionsInterface,
+  UserInterface,
+} from 'src/authentication/common/interfaces';
 import { PublicRoute, UserPayload } from 'src/authentication/utils/decorators';
+import { OrderService } from '../user/order/order.service';
 
 //guard
 @ApiTags('BackgroundRemove|ADMIN')
@@ -37,7 +42,8 @@ import { PublicRoute, UserPayload } from 'src/authentication/utils/decorators';
 })
 export class AdminController {
   constructor(
-    private readonly authService: AuthService, // private readonly userService: UserService,
+    private readonly authService: AuthService,
+    private readonly orderService: OrderService, // private readonly userService: UserService,
   ) {}
 
   // signup route
@@ -142,6 +148,84 @@ export class AdminController {
     );
 
     return { message: 'Successful', result: data };
+  }
+
+  // pagination all user data
+  @ApiOperation({
+    summary: 'pagination of all user data',
+    description: 'this route is responsible for pagination of all user data',
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    description: 'insert limit if you need',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    description: 'insert page if you need',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'filter',
+    type: String,
+    description: 'insert filter if you need',
+    required: false,
+  })
+  @Get('all/user')
+  @UseGuards(AdminGuard)
+  async packageData(
+    @Query() listQueryParam: PaginationOptionsInterface,
+    @Query('filter') filter: any,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const result = await this.authService.findAllUser(
+      listQueryParam,
+      filter,
+      userPayload,
+    );
+
+    return { message: 'successful', result: result };
+  }
+
+  // pagination all order data
+  @ApiOperation({
+    summary: 'pagination of all order data',
+    description: 'this route is responsible for pagination of all order data',
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    description: 'insert limit if you need',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    description: 'insert page if you need',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'filter',
+    type: String,
+    description: 'insert filter if you need',
+    required: false,
+  })
+  @Get('all/order')
+  @UseGuards(AdminGuard)
+  async orderData(
+    @Query() listQueryParam: PaginationOptionsInterface,
+    @Query('filter') filter: any,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const result = await this.orderService.findAllOrder(
+      listQueryParam,
+      filter,
+      userPayload,
+    );
+
+    return { message: 'successful', result: result };
   }
 
   // // show all user data

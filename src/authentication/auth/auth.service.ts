@@ -23,7 +23,11 @@ import { LoginDto } from './dto/login.dto';
 import { UserEntity } from 'src/modules/user/entities';
 import { UserService } from 'src/modules/user/user.service';
 import { ErrorMessage, StatusField, UserTypesEnum } from '../common/enum';
-import { Pagination, UserInterface } from '../common/interfaces';
+import {
+  Pagination,
+  PaginationOptionsInterface,
+  UserInterface,
+} from '../common/interfaces';
 import {
   ChangeForgotPassDto,
   ForgotPassDto,
@@ -606,56 +610,32 @@ export class AuthService {
 
   // find all user
   async findAllUser(
-    paginationDataDto: PaginationDataDto,
+    listQueryParam: PaginationOptionsInterface,
+    filter: any,
     userPayload: UserInterface,
   ) {
-    const limit = paginationDataDto.pageSize ? paginationDataDto.pageSize : 10;
-    const page = paginationDataDto.pageNumber
-      ? paginationDataDto.pageNumber == 1
+    if (decrypt(userPayload.hashType) !== UserTypesEnum.ADMIN) {
+      throw new BadRequestException(
+        'You are not allow to see any kind of Blog',
+      );
+    }
+    const limit: number = listQueryParam.limit ? listQueryParam.limit : 10;
+    const page: number = listQueryParam.page
+      ? +listQueryParam.page == 1
         ? 0
-        : paginationDataDto.pageNumber
+        : listQueryParam.page
       : 1;
 
     const [result, total] = await this.usersRepository
       .createQueryBuilder('user')
-      // .leftJoinAndMapOne(
-      //   'user.domain',
-      //   DomainEntity,
-      //   'domain',
-      //   `user.id = domain.userId`,
-      // )
-      // .leftJoinAndMapOne(
-      //   'user.blacklist',
-      //   BlacklistEntity,
-      //   'blacklist',
-      //   `user.id = blacklist.userId`,
-      // )
       .where(
         new Brackets((qb) => {
-          if (
-            paginationDataDto.filter &&
-            Object.keys(paginationDataDto.filter).length > 0
-          ) {
-            Object.keys(paginationDataDto.filter).forEach(function (key) {
-              if (paginationDataDto.filter[key] !== '') {
-                if (key === 'status') {
-                  qb.andWhere(
-                    `user.${key} = '${paginationDataDto.filter[key]}'`,
-                  );
-                } else {
-                  qb.andWhere(
-                    `CAST(user.${key} as VARCHAR) ILIKE ('%${paginationDataDto.filter[key]}%')`,
-                  );
-                }
-              }
-            });
+          if (filter) {
+            qb.where(`user.name ILIKE ('%${filter}%')`);
           }
         }),
       )
-      .orderBy(
-        `user.${paginationDataDto.sortField}`,
-        paginationDataDto.sortOrder,
-      )
+      .orderBy('user.id', 'DESC')
       .take(limit)
       .skip(page > 0 ? page * limit - limit : page)
       .getManyAndCount();

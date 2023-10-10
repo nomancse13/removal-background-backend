@@ -19,6 +19,7 @@ import { PriceFixingService } from './price-fixing/price-fixing.service';
 import { PriceFixingController } from './price-fixing/price-fixing.controller';
 import { PriceFixingEntity } from './price-fixing/entity';
 import { OrderEntity } from '../user/order/entity/order.entity';
+import { UserModule } from '../user/user.module';
 /**controllers */
 /**Authentication strategies */
 @Module({
@@ -33,6 +34,7 @@ import { OrderEntity } from '../user/order/entity/order.entity';
       ApiPlanEntity,
     ]),
     QueueMailModule,
+    forwardRef(() => UserModule),
     forwardRef(() => AuthModule),
   ],
   controllers: [
