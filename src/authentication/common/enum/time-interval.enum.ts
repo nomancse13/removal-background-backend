@@ -1,6 +1,5 @@
 export enum TimeIntervalEnum {
-    DAYS = 'days',
-    MONTH = 'month',
-    YEAR = 'year',
-  }
-  
+  DAYS = 'days',
+  MONTH = 'month',
+  YEAR = 'year',
+}

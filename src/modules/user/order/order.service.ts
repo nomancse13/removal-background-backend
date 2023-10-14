@@ -563,7 +563,7 @@ export class OrderService {
     }
   }
 
-  // find all order
+  // find all orde
   async findAllOrder(
     listQueryParam: PaginationOptionsInterface,
     filter: any,

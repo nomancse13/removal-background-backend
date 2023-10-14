@@ -1,6 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
-import { TimeIntervalEnum } from 'src/authentication/common/enum';
 
 export class CreateApiPlanDto {
   @ApiPropertyOptional()
