@@ -420,67 +420,50 @@ export class PlanService {
       : ErrorMessage.DELETE_FAILED;
   }
 
-  // paginated data plan
-  // async paginatedApiPlanForUser(
-  //   listQueryParam: PaginationOptionsInterface,
-  //   filter: any,
-  //   userPayload: UserInterface,
-  // ) {
-  //   if (
-  //     decrypt(userPayload.hashType) !== UserTypesEnum.USER ||
-  //     decrypt(userPayload.hashType) !== UserTypesEnum.CLIENT
-  //   ) {
-  //     throw new BadRequestException(
-  //       'You are not allow to see any kind of plan',
-  //     );
-  //   }
-  //   const limit: number = listQueryParam.limit ? listQueryParam.limit : 10;
-  //   const page: number = listQueryParam.page
-  //     ? +listQueryParam.page == 1
-  //       ? 0
-  //       : listQueryParam.page
-  //     : 1;
+  // _____________Public plan Showing_______
 
-  //   const [results, total] = await this.apiPlanRepository
-  //     .createQueryBuilder('plan')
-  //     .leftJoinAndMapOne(
-  //       'plan.order',
-  //       OrderEntity,
-  //       'order',
-  //       `plan.id = order.planId AND order.userId = ${userPayload.id}`,
-  //     )
-  //     .where(
-  //       new Brackets((qb) => {
-  //         if (filter) {
-  //           qb.where(`plan.name ILIKE ('%${filter}%')`);
-  //         }
-  //       }),
-  //     )
-  //     .andWhere(`plan.status = '${StatusField.ACTIVE}'`)
-  //     .select([
-  //       `plan.status`,
-  //       `plan.id`,
-  //       `plan.name`,
-  //       `plan.slug`,
-  //       `plan.description`,
-  //       `plan.isActive`,
-  //       `plan.price`,
-  //       `plan.quantity`,
-  //       `plan.duration`,
-  //       `order.userId`,
-  //       `order.planId`,
-  //       `order.subscriptionStatus`,
-  //     ])
-  //     .orderBy('plan.id', 'DESC')
-  //     .take(limit)
-  //     .skip(page > 0 ? page * limit - limit : page)
-  //     .getManyAndCount();
+  // paginated plan data for showing to public
+  async paginatedPlanForPublic(
+    listQueryParam: PaginationOptionsInterface,
+    filter: any,
+  ) {
+    const limit: number = listQueryParam.limit ? listQueryParam.limit : 10;
+    const page: number = listQueryParam.page
+      ? +listQueryParam.page == 1
+        ? 0
+        : listQueryParam.page
+      : 1;
 
-  //   return new Pagination<PlanEntity>({
-  //     results,
-  //     total,
-  //     currentPage: page === 0 ? 1 : page,
-  //     limit,
-  //   });
-  // }
+    const [results, total] = await this.planRepository
+      .createQueryBuilder('plan')
+      .where(
+        new Brackets((qb) => {
+          if (filter) {
+            qb.where(`plan.name ILIKE ('%${filter}%')`);
+          }
+        }),
+      )
+      .andWhere(`plan.status = '${StatusField.ACTIVE}'`)
+      .select([
+        `plan.status`,
+        `plan.id`,
+        `plan.name`,
+        `plan.slug`,
+        `plan.isActive`,
+        `plan.price`,
+        `plan.perImgCost`,
+        `plan.packagePeriod`,
+      ])
+      .orderBy('plan.id', 'DESC')
+      .take(limit)
+      .skip(page > 0 ? page * limit - limit : page)
+      .getManyAndCount();
+
+    return new Pagination<PlanEntity>({
+      results,
+      total,
+      currentPage: page === 0 ? 1 : page,
+      limit,
+    });
+  }
 }

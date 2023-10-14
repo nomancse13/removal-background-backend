@@ -5,9 +5,15 @@ import { PublicBlogController } from './blog/public-blog.controller';
 import { AdminModule } from 'src/modules/admin/admin.module';
 import { PublicCommentController } from './comment/public-comment.controller';
 import { AuthenticationModule } from 'src/authentication/authentication.module';
+import { PublicPlanController } from './plan/public-plan.controller';
 
 @Module({
-  controllers: [PublicBackgroundRemoveController, PublicBlogController, PublicCommentController],
+  controllers: [
+    PublicBackgroundRemoveController,
+    PublicBlogController,
+    PublicCommentController,
+    PublicPlanController,
+  ],
   providers: [],
   imports: [BackgroundRemovalModule, AdminModule, AuthenticationModule],
 })
