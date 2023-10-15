@@ -13,10 +13,7 @@ import {
   PaginationOptionsInterface,
   UserInterface,
 } from 'src/authentication/common/interfaces';
-import {
-  PaginationDataDto,
-  SoftDeleteDto,
-} from 'src/authentication/common/dtos';
+import { SoftDeleteDto } from 'src/authentication/common/dtos';
 import {
   ErrorMessage,
   PackagePeriodEnum,

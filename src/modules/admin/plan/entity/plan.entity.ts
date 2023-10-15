@@ -22,13 +22,13 @@ export class PlanEntity extends CommonEntity {
   @Column({ type: 'int', default: 0 })
   isActive: number;
 
-  @Column({ type: 'bigint', nullable: true })
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   price: number;
 
   @Column({ type: 'bigint', nullable: true })
   quantity: number;
 
-  @Column({ type: 'bigint', nullable: true })
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   perImgCost: number;
 
   @Column({
