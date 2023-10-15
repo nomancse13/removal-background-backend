@@ -98,7 +98,7 @@ export class PlanService {
     if (data) {
       return data;
     } else {
-      throw new BadRequestException(`Data not Found!`);
+      throw new BadRequestException(`Plan not Found!`);
     }
   }
 

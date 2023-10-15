@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
+  PackagePeriodEnum,
   SubscriptionStatusEnum,
   UserTypesEnum,
 } from 'src/authentication/common/enum';
@@ -44,13 +45,15 @@ export class OrderService {
     });
 
     const orderData = {
+      createdType: decrypt(userPayload.hashType),
       userId: userPayload.id,
       userType: decrypt(userPayload.hashType),
       planId: body.planId,
       expiredDate: null,
       packageDate: null,
       subscriptionStatus:
-        planInfo.name.toLowerCase() == 'free'
+        planInfo.packagePeriod !== PackagePeriodEnum.LIFE_TIME &&
+        planInfo.packagePeriod !== PackagePeriodEnum.MONTH
           ? SubscriptionStatusEnum.COMPLETE
           : SubscriptionStatusEnum.PENDING,
     };
@@ -59,8 +62,10 @@ export class OrderService {
     } else {
       const updatedData = {
         planId: body.planId,
+        updatedType: decrypt(userPayload.hashType),
         subscriptionStatus:
-          planInfo.name.toLowerCase() == 'free'
+          planInfo.packagePeriod !== PackagePeriodEnum.LIFE_TIME &&
+          planInfo.packagePeriod !== PackagePeriodEnum.MONTH
             ? SubscriptionStatusEnum.COMPLETE
             : SubscriptionStatusEnum.PENDING,
       };
