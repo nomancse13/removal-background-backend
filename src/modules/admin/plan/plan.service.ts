@@ -226,6 +226,7 @@ export class PlanService {
         `plan.slug`,
         `plan.isActive`,
         `plan.price`,
+        `plan.quantity`,
         `plan.perImgCost`,
         `plan.packagePeriod`,
         `order.userId`,
@@ -453,6 +454,7 @@ export class PlanService {
         `plan.price`,
         `plan.perImgCost`,
         `plan.packagePeriod`,
+        `plan.quantity`,
       ])
       .orderBy('plan.id', 'DESC')
       .take(limit)

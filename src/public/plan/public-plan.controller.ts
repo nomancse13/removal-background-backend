@@ -15,6 +15,7 @@ export class PublicPlanController {
   constructor(private readonly planService: PlanService) {}
 
   // get all plan data with paginaiton
+
   @ApiOperation({
     summary: 'get all plan data with pagination',
     description:
