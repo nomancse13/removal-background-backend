@@ -19,6 +19,7 @@ import {
 } from 'src/authentication/common/dtos';
 import {
   ErrorMessage,
+  PackagePeriodEnum,
   StatusField,
   UserTypesEnum,
 } from 'src/authentication/common/enum';
@@ -238,12 +239,39 @@ export class PlanService {
       .skip(page > 0 ? page * limit - limit : page)
       .getManyAndCount();
 
-    return new Pagination<PlanEntity>({
-      results,
-      total,
-      currentPage: page === 0 ? 1 : page,
-      limit,
-    });
+    const lifetime = [];
+    const month = [];
+
+    await Promise.all(
+      results.map((e: any) => {
+        if (e.packagePeriod === PackagePeriodEnum.LIFE_TIME) {
+          lifetime.push({
+            id: e.id,
+            name: e.name,
+            slug: e.slug,
+            price: e.price,
+            quantity: e.quantity,
+            perImgCost: e.perImgCost,
+            packagePeriod: e.packagePeriod,
+          });
+        } else if (e.packagePeriod === PackagePeriodEnum.MONTH) {
+          month.push({
+            id: e.id,
+            name: e.name,
+            slug: e.slug,
+            price: e.price,
+            quantity: e.quantity,
+            perImgCost: e.perImgCost,
+            packagePeriod: e.packagePeriod,
+          });
+        }
+      }),
+    );
+
+    return {
+      lifetime,
+      month,
+    };
   }
 
   // ******* API PLAN CRUD ************
@@ -461,11 +489,38 @@ export class PlanService {
       .skip(page > 0 ? page * limit - limit : page)
       .getManyAndCount();
 
-    return new Pagination<PlanEntity>({
-      results,
-      total,
-      currentPage: page === 0 ? 1 : page,
-      limit,
-    });
+    const lifetime = [];
+    const month = [];
+
+    await Promise.all(
+      results.map((e: any) => {
+        if (e.packagePeriod === PackagePeriodEnum.LIFE_TIME) {
+          lifetime.push({
+            id: e.id,
+            name: e.name,
+            slug: e.slug,
+            price: e.price,
+            quantity: e.quantity,
+            perImgCost: e.perImgCost,
+            packagePeriod: e.packagePeriod,
+          });
+        } else if (e.packagePeriod === PackagePeriodEnum.MONTH) {
+          month.push({
+            id: e.id,
+            name: e.name,
+            slug: e.slug,
+            price: e.price,
+            quantity: e.quantity,
+            perImgCost: e.perImgCost,
+            packagePeriod: e.packagePeriod,
+          });
+        }
+      }),
+    );
+
+    return {
+      lifetime,
+      month,
+    };
   }
 }
