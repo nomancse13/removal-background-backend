@@ -4,7 +4,7 @@ import {
   Body,
   UseGuards,
   Get,
-  Put,
+  Patch,
   Delete,
   Param,
   Query,
@@ -138,7 +138,7 @@ export class UserController {
    */
   @ApiBearerAuth('jwt')
   @UseGuards(AtGuard)
-  @Put()
+  @Patch()
   @ApiOperation({
     summary: 'Update a SUBSCRIBER User data',
     description: 'This route is responsible for updating a SUBSCRIBER User',
