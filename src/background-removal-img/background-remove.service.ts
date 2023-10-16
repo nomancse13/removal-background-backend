@@ -181,7 +181,7 @@ export class BackgroundRemovalService {
 
     if (!userOrderData) {
       throw new BadRequestException(
-        `sorry. your free trial is finished. please enroll one.`,
+        `sorry. your free trial has been finished. please enroll one.`,
       );
     }
 
