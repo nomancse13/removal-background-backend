@@ -157,8 +157,6 @@ export class BackgroundRemovalService {
 
       const mainImage = await image.getBase64Async(Jimp.MIME_JPEG);
 
-      // console.log(mainImage, 'mainImage');
-
       await this.activityLogService.entryLog(log);
       return mainImage;
     } else {
