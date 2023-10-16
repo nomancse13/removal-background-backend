@@ -15,7 +15,7 @@ import {
 } from 'src/authentication/common/interfaces';
 import { PlanService } from 'src/modules/admin/plan/plan.service';
 import { OrderHistoryEntity } from './entity/order-history.entity';
-import { PlanEntity } from 'src/modules/admin/plan/entity';
+import { ApiPlanEntity, PlanEntity } from 'src/modules/admin/plan/entity';
 import { BadRequestException } from '@nestjs/common';
 import { decrypt } from 'src/helper/crypto.helper';
 import { ApiPlanOrderEntity } from './entity';
@@ -551,7 +551,7 @@ export class OrderService {
       .createQueryBuilder('order')
       .leftJoinAndMapOne(
         'order.plan',
-        ApiPlanOrderEntity,
+        ApiPlanEntity,
         'apiplan',
         `order.apiPlanId = apiplan.id`,
       )

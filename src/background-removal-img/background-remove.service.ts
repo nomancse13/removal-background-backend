@@ -171,11 +171,19 @@ export class BackgroundRemovalService {
   async removeBgByApiKey(path: string, outputFile: string, apiKey: string) {
     const userData = await this.authService.findUserByUId(apiKey);
 
+    if (!userData) {
+      throw new BadRequestException(`apikey u provided is not matched!`);
+    }
+
     const userOrderData: any = await this.orderService.getApiPlanOrderByUserId(
       userData.id,
     );
 
-    console.log(userOrderData, 'userOrder');
+    if (!userOrderData) {
+      throw new BadRequestException(
+        `sorry. your free trial is finished. please enroll one.`,
+      );
+    }
 
     const userCreate = userData.createdAt.toString();
 
