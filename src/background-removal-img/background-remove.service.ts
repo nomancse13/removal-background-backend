@@ -170,7 +170,7 @@ export class BackgroundRemovalService {
     const userData = await this.authService.findUserByUId(apiKey);
 
     if (!userData) {
-      throw new BadRequestException(`apikey u provided is not matched!`);
+      throw new BadRequestException(`apikey you provided is not matched!`);
     }
 
     const userOrderData: any = await this.orderService.getApiPlanOrderByUserId(
@@ -179,7 +179,7 @@ export class BackgroundRemovalService {
 
     if (!userOrderData) {
       throw new BadRequestException(
-        `sorry. your free trial has been finished. please enroll one.`,
+        `sorry. your free trial has been finished. please enrolled one.`,
       );
     }
 
