@@ -1,25 +1,15 @@
-// src/background-removal/background-removal.controller.ts
 import {
   Controller,
   Post,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import * as path from 'path';
 import { diskStorage } from 'multer';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AtGuard } from 'src/authentication/auth/guards';
-import {
-  IpPlusClientAddress,
-  UserPayload,
-} from 'src/authentication/utils/decorators';
-// import { UserInterface } from 'src/authentication/common/interfaces';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { IpPlusClientAddress } from 'src/authentication/utils/decorators';
 import { IpClientInterface } from 'src/authentication/common/interfaces/ip-client.interface';
 import { BackgroundRemovalService } from 'src/background-removal-img/background-remove.service';
-// import imageSize from 'image-size';
-// import * as fs from 'fs';
 
 @ApiTags('Public | Remove Background')
 @Controller({
@@ -79,10 +69,6 @@ export class PublicBackgroundRemoveController {
         outputImagePath,
         ipClientPayload,
       );
-
-    // const dimension = imageSize(success);
-
-    // console.log(dimension, 'dimension');
 
     if (success) {
       // const data = success.replace(/^data:image\/\w+;base64,/, '');

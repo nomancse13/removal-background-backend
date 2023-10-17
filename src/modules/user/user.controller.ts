@@ -334,7 +334,7 @@ export class UserController {
     description: 'insert filter if you need',
     required: false,
   })
-  @Post('plan/all')
+  @Get('plan/all')
   async packageData(
     @Query() listQueryParam: PaginationOptionsInterface,
     @Query('filter') filter: any,

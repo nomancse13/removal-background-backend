@@ -4,8 +4,6 @@ import {
   Injectable,
   forwardRef,
 } from '@nestjs/common';
-// import * as fs from 'fs';
-// import * as remove from 'rembg';
 import { RemoveBgResult, removeBackgroundFromImageFile } from 'remove.bg';
 import {
   ErrorMessage,
@@ -24,11 +22,6 @@ import { ActivityLogService } from 'src/modules/admin/activity-log/activityLog.s
 import imageSize from 'image-size';
 import Jimp from 'jimp';
 import { AuthService } from 'src/authentication/auth/auth.service';
-import { CurrentDate } from 'src/helper/date-time-helper';
-// import sharp from 'sharp';
-// import { S3 } from 'aws-sdk';
-// import * as path from 'path';
-// import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class BackgroundRemovalService {
