@@ -115,7 +115,7 @@ async function bootstrap() {
       // exception factory for custom validation error message as key value pair
       exceptionFactory: (validationErrors: ValidationError[] = []) => {
         const response_data = {};
-        
+
         validationErrors.filter(function (values) {
           if (values.children && values.children.length > 0) {
             values.children.map((element) => {

@@ -63,12 +63,10 @@ export class PublicBackgroundRemoveController {
     const inputImagePath = file.path;
     const outputImagePath = Date.now() + '.jpg'; // Provide the desired output path
 
-    const success =
-      await this.backgroundRemovalService.removeBgFunctionForPublic(
-        inputImagePath,
-        outputImagePath,
-        ipClientPayload,
-      );
+    const success = await this.backgroundRemovalService.removeBackground(
+      file,
+      outputImagePath,
+    );
 
     if (success) {
       // const data = success.replace(/^data:image\/\w+;base64,/, '');
