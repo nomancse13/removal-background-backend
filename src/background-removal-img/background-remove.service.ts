@@ -139,7 +139,6 @@ export class BackgroundRemovalService {
     ipClientPayload?: IpClientInterface,
   ) {
     const file = path;
-
     if (file.indexOf(' ') !== -1) {
       throw new BadRequestException(`please avoid space in file name!!`);
     }

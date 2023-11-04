@@ -589,7 +589,7 @@ export class OrderService {
     }
   }
 
-  // find all orde
+  // find all order
   async findAllOrder(
     listQueryParam: PaginationOptionsInterface,
     filter: any,
@@ -597,7 +597,7 @@ export class OrderService {
   ) {
     if (decrypt(userPayload.hashType) !== UserTypesEnum.ADMIN) {
       throw new BadRequestException(
-        'You are not allow to see any kind of Blog',
+        'You are not allow to see any kind of order',
       );
     }
     const limit: number = listQueryParam.limit ? listQueryParam.limit : 10;
@@ -622,6 +622,25 @@ export class OrderService {
           }
         }),
       )
+      .select([
+        `order.status`,
+        `order.id`,
+        `order.planId`,
+        `order.userId`,
+        `order.subscriptionStatus`,
+        `order.createdAt`,
+        `user.id`,
+        `user.name`,
+        `user.email`,
+        `user.mobile`,
+        `user.userType`,
+        `user.gender`,
+        `user.profileImgSrc`,
+        `user.maritalStatus`,
+        `user.birthDate`,
+        `user.address`,
+        `user.quantity`,
+      ])
       .orderBy('order.id', 'DESC')
       .take(limit)
       .skip(page > 0 ? page * limit - limit : page)
