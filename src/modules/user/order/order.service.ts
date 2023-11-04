@@ -431,6 +431,27 @@ export class OrderService {
   //     }
   //   }
 
+  //   get order by userID
+
+  async byDefaultInsertOrder(userPayload: any) {
+    const planData = await this.planService.getFreePlan();
+    const orderData = {
+      createdType: userPayload.userType,
+      userId: userPayload.userId,
+      userType: userPayload.userType,
+      planId: planData.id,
+      expiredDate: null,
+      packageDate: null,
+      subscriptionStatus: SubscriptionStatusEnum.COMPLETE,
+    };
+
+    if (orderData) {
+      await this.orderRepository.save(orderData);
+    } else {
+      return `order not inserted!!!`;
+    }
+  }
+
   // ******* API PLAN Order api ************
 
   async createApiPlanOrder(body: CreateOrderDto, userPayload: UserInterface) {

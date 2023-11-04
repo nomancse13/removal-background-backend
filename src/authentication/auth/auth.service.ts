@@ -38,6 +38,7 @@ import { Brackets } from 'typeorm';
 import { PaginationDataDto } from '../common/dtos';
 import { SystemUserEntity } from 'src/modules/admin/entities';
 import { v4 as uuidv4 } from 'uuid';
+import { OrderService } from 'src/modules/user/order/order.service';
 @Injectable()
 export class AuthService {
   constructor(
@@ -49,6 +50,7 @@ export class AuthService {
     private readonly queueMailService: QueueMailService,
     private readonly configService: ConfigService,
     private readonly userService: UserService,
+    private readonly orderService: OrderService,
   ) {}
 
   // ********** GENERAL USER ********
@@ -79,6 +81,13 @@ export class AuthService {
       const insertData = await this.usersRepository.save(dto);
       let tokens;
       if (insertData) {
+        const userPayload = {
+          userId: insertData.id,
+          userType: insertData.userType,
+        };
+        const data = await this.orderService.byDefaultInsertOrder(userPayload);
+        console.log(data, 'ddd');
+
         tokens = await this.getTokens({
           id: insertData.id,
           email: insertData.email,

@@ -100,6 +100,20 @@ export class PlanService {
     }
   }
 
+  // get single plan
+
+  async getFreePlan() {
+    const data = await this.planRepository.findOne({
+      where: { price: 0 },
+    });
+
+    if (data) {
+      return data;
+    } else {
+      throw new BadRequestException(`Plan not Found!`);
+    }
+  }
+
   // paginated data plan
   async paginatedPlan(
     listQueryParam: PaginationOptionsInterface,

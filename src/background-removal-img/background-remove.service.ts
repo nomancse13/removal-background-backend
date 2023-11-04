@@ -84,6 +84,13 @@ export class BackgroundRemovalService {
 
     let current = path;
     let save = outputFile;
+
+    const file = path;
+
+    if (file.indexOf(' ') !== -1) {
+      throw new BadRequestException(`please avoid space in file name!!`);
+    }
+
     const img = await this.asyncRemoveBackground(current, save);
 
     if (
@@ -131,8 +138,11 @@ export class BackgroundRemovalService {
     outputFile: string,
     ipClientPayload?: IpClientInterface,
   ) {
-    const dimension = imageSize(path);
+    const file = path;
 
+    if (file.indexOf(' ') !== -1) {
+      throw new BadRequestException(`please avoid space in file name!!`);
+    }
     const ipData = await this.activityLogService.getLogCount(
       ipClientPayload.ip,
     );
