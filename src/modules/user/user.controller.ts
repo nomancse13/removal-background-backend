@@ -21,6 +21,7 @@ import { AuthService } from 'src/authentication/auth/auth.service';
 import {
   AuthDto,
   ChangeForgotPassDto,
+  ChangePasswordDto,
   ForgotPassDto,
   LoginDto,
   OtpVerifyDto,
@@ -38,6 +39,7 @@ import { PublicRoute, UserPayload } from 'src/authentication/utils/decorators';
 import { PlanService } from '../admin/plan/plan.service';
 import { CreateCustomPackageDto } from '../admin/price-fixing/dtos/create-custom-package.dto';
 import { PriceFixingService } from '../admin/price-fixing/price-fixing.service';
+import { UserService } from './user.service';
 
 //swagger doc
 @ApiTags('RB|User')
@@ -54,6 +56,7 @@ export class UserController {
   constructor(
     private readonly authService: AuthService,
     private readonly planService: PlanService,
+    private readonly userService: UserService,
     private readonly priceFixingService: PriceFixingService,
   ) {}
 
@@ -182,41 +185,41 @@ export class UserController {
     return { message: 'Successful', result: data };
   }
 
-  // // change password
-  // @ApiBearerAuth('jwt')
-  // @ApiOperation({
-  //   summary: 'change authenticated users password',
-  //   description:
-  //     'this route is responsible for changing password for all type of users',
-  // })
-  // @ApiBody({
-  //   type: ChangePasswordDto,
-  //   description:
-  //     'How to change password with body?... here is the example given below!',
-  //   examples: {
-  //     a: {
-  //       summary: 'default',
-  //       value: {
-  //         oldPassword: '123456',
-  //         password: '123456',
-  //         passwordConfirm: '123456',
-  //       } as unknown as ChangePasswordDto,
-  //     },
-  //   },
-  // })
-  // @UseGuards(AtGuard)
-  // @Post('change-password')
-  // async changePassword(
-  //   @Body() changePasswordData: ChangePasswordDto,
-  //   @UserPayload() userPayload: UserInterface,
-  // ) {
-  //   const data = await this.userService.passwordChanged(
-  //     changePasswordData,
-  //     userPayload,
-  //   );
+  // change password
+  @ApiBearerAuth('jwt')
+  @ApiOperation({
+    summary: 'change authenticated users password',
+    description:
+      'this route is responsible for changing password for all type of users',
+  })
+  @ApiBody({
+    type: ChangePasswordDto,
+    description:
+      'How to change password with body?... here is the example given below!',
+    examples: {
+      a: {
+        summary: 'default',
+        value: {
+          oldPassword: '123456',
+          password: '123456',
+          passwordConfirm: '123456',
+        } as unknown as ChangePasswordDto,
+      },
+    },
+  })
+  @UseGuards(AtGuard)
+  @Post('change/own/password')
+  async changePassword(
+    @Body() changePasswordData: ChangePasswordDto,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const data = await this.userService.passwordChanged(
+      changePasswordData,
+      userPayload,
+    );
 
-  //   return { message: 'Successful', result: data };
-  // }
+    return { message: 'Successful', result: data };
+  }
 
   //forgot password route
   @PublicRoute()

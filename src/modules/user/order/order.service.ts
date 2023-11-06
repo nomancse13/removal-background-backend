@@ -607,13 +607,19 @@ export class OrderService {
         : listQueryParam.page
       : 1;
 
-    const [results, total] = await this.orderRepository
+    const query = await this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndMapOne(
         'order.user',
         UserEntity,
         'user',
         `order.userId = user.id`,
+      )
+      .leftJoinAndMapOne(
+        'order.plan',
+        PlanEntity,
+        'plan',
+        `order.planId = plan.id`,
       )
       .where(
         new Brackets((qb) => {
@@ -623,28 +629,26 @@ export class OrderService {
         }),
       )
       .select([
-        `order.status`,
-        `order.id`,
-        `order.planId`,
-        `order.userId`,
-        `order.subscriptionStatus`,
-        `order.createdAt`,
-        `user.id`,
-        `user.name`,
-        `user.email`,
-        `user.mobile`,
-        `user.userType`,
-        `user.gender`,
-        `user.profileImgSrc`,
-        `user.maritalStatus`,
-        `user.birthDate`,
-        `user.address`,
-        `user.quantity`,
+        `order.status as status`,
+        `order.id as id`,
+        `order.planId as planId`,
+        `order.userId as userId`,
+        `order.subscriptionStatus as subscriptionStatus`,
+        `order.createdAt as createdAt`,
+        `user.id as userId`,
+        `user.name as userName`,
+        `user.email as userEmail`,
+        `user.userType as userType`,
+        `plan.id as planId`,
+        `plan.name as planName`,
+        `plan.quantity as quantity`,
       ])
       .orderBy('order.id', 'DESC')
       .take(limit)
-      .skip(page > 0 ? page * limit - limit : page)
-      .getManyAndCount();
+      .skip(page > 0 ? page * limit - limit : page);
+
+    const results = await query.getRawMany();
+    const total = await query.getCount();
 
     return new Pagination<OrderEntity>({
       results,

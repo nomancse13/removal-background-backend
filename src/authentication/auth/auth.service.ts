@@ -39,6 +39,7 @@ import { PaginationDataDto } from '../common/dtos';
 import { SystemUserEntity } from 'src/modules/admin/entities';
 import { v4 as uuidv4 } from 'uuid';
 import { OrderService } from 'src/modules/user/order/order.service';
+import { UserBannedDto } from 'src/modules/admin/dtos';
 @Injectable()
 export class AuthService {
   constructor(
@@ -950,5 +951,24 @@ export class AuthService {
   // google login
   async googleLogin(req: any, res: Response) {
     return req.user;
+  }
+
+  // subsriber user banned by admin
+  async bannedUserByAdmin(
+    id: number,
+    userBannedDto: UserBannedDto,
+    userPayload: UserInterface,
+  ) {
+    if (decrypt(userPayload.hashType) !== UserTypesEnum.ADMIN) {
+      throw new NotFoundException('Unknown UserType!');
+    }
+
+    const updateData = {
+      status: userBannedDto.status,
+    };
+
+    const data = await this.usersRepository.update({ id: id }, updateData);
+
+    return data.affected > 0 ? `User Banned Successfully!` : 'Not Banned!';
   }
 }

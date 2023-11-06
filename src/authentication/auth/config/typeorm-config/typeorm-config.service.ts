@@ -15,15 +15,13 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
   constructor(private readonly configService: ConfigService) {}
 
   createTypeOrmOptions(): TypeOrmModuleOptions {
-    console.log(this.configService.get('OTP_EXPIRATION'));
-    
     return {
       type: 'mysql',
       host: this.configService.get<string>('MYSQL_DB_HOST'),
       port: +this.configService.get<number>('MYSQL_DB_PORT'),
-      username: this.configService.get<string>('MYSQL_DB_USER') ,
+      username: this.configService.get<string>('MYSQL_DB_USER'),
       password: this.configService.get<string>('MYSQL_DB_PASSWORD'),
-      database: this.configService.get<string>('MYSQL_DB') ,
+      database: this.configService.get<string>('MYSQL_DB'),
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       autoLoadEntities: true,
       synchronize:

@@ -31,6 +31,7 @@ import {
 } from 'src/authentication/common/interfaces';
 import { PublicRoute, UserPayload } from 'src/authentication/utils/decorators';
 import { OrderService } from '../user/order/order.service';
+import { UserBannedDto } from './dtos';
 
 //guard
 @ApiTags('BackgroundRemove|ADMIN')
@@ -334,50 +335,48 @@ export class AdminController {
   //   };
   // }
 
-  // // user banned by admin
+  // user banned by admin
 
-  // // @ApiOperation({
-  // //   summary: 'for status changing of a subscriber user use this api',
-  // //   description:
-  // //     'this route is responsible for status changing of a subscriber user',
-  // // })
-  // // @ApiBearerAuth('jwt')
-  // // @ApiBody({
-  // //   type: UserBannedDto,
-  // //   description:
-  // //     'How to change status of a subscriber user with body?... here is the example given below!',
-  // //   examples: {
-  // //     a: {
-  // //       summary: 'chaging status',
-  // //       value: {
-  // //         status: 'Banned',
-  // //       } as unknown as UserBannedDto,
-  // //     },
-  // //   },
-  // // })
-  // // @ApiParam({
-  // //   name: 'id',
-  // //   type: Number,
-  // //   description: 'for banned user required user id',
-  // //   required: true,
-  // // })
-  // // @UseGuards(AdminGuard)
-  // // @Patch('banned-user/:id')
-  // // async bannedUser(
-  // //   @Param('id') id: number,
-  // //   @Body() userBannedDto: UserBannedDto,
-  // //   @UserPayload() userPayload: UserInterface,
-  // //   @IpPlusClientAddress() ipClientPayload: IpClientInterface,
-  // // ) {
-  // //   const data = await this.subscriberUserService.bannedUserByAdmin(
-  // //     id,
-  // //     userBannedDto,
-  // //     userPayload,
-  // //     ipClientPayload,
-  // //   );
+  @ApiOperation({
+    summary: 'for status changing of a subscriber user use this api',
+    description:
+      'this route is responsible for status changing of a subscriber user',
+  })
+  @ApiBearerAuth('jwt')
+  @ApiBody({
+    type: UserBannedDto,
+    description:
+      'How to change status of a subscriber user with body?... here is the example given below!',
+    examples: {
+      a: {
+        summary: 'chaging status',
+        value: {
+          status: 'Banned',
+        } as unknown as UserBannedDto,
+      },
+    },
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'for banned user required user id',
+    required: true,
+  })
+  @UseGuards(AdminGuard)
+  @Patch('banned/user/:id')
+  async bannedUser(
+    @Param('id') id: number,
+    @Body() userBannedDto: UserBannedDto,
+    @UserPayload() userPayload: UserInterface,
+  ) {
+    const data = await this.authService.bannedUserByAdmin(
+      id,
+      userBannedDto,
+      userPayload,
+    );
 
-  // //   return { message: 'successful!', result: data };
-  // // }
+    return { message: 'successful!', result: data };
+  }
 
   // /**
   //  *  UPDATE SUBSCRIBER USER Profile

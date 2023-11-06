@@ -22,74 +22,74 @@ export class UserService {
     private readonly configService: ConfigService,
     private readonly queueMailService: QueueMailService,
   ) {}
-  //password change
-  // async passwordChanged(
-  //   changePasswordDto: ChangePasswordDto,
-  //   userPayload: UserInterface,
-  // ) {
-  //   const updateData = {};
-  //   updateData['password'] = await this.hashPassword(
-  //     changePasswordDto.password,
-  //   );
-  //   const data = await this.usersRepository.findOne({
-  //     where: {
-  //       id: userPayload.id,
-  //     },
-  //   });
+  // password change
+  async passwordChanged(
+    changePasswordDto: ChangePasswordDto,
+    userPayload: UserInterface,
+  ) {
+    const updateData = {};
+    updateData['password'] = await this.hashPassword(
+      changePasswordDto.password,
+    );
+    const data = await this.usersRepository.findOne({
+      where: {
+        id: userPayload.id,
+      },
+    });
 
-  //   //validate old password
-  //   const oldPassValidate = await this.compareUserPassword(
-  //     changePasswordDto.oldPassword,
-  //     data.password,
-  //   );
-  //   if (oldPassValidate) {
-  //     await this.usersRepository.update({ id: userPayload.id }, updateData);
-  //   } else {
-  //     return 'password not matched!';
-  //   }
+    //validate old password
+    const oldPassValidate = await this.compareUserPassword(
+      changePasswordDto.oldPassword,
+      data.password,
+    );
+    if (oldPassValidate) {
+      await this.usersRepository.update({ id: userPayload.id }, updateData);
+    } else {
+      return 'password not matched!';
+    }
 
-  //   //if data is empty
-  //   if (!data) {
-  //     throw new NotFoundException('No user found!');
-  //   }
+    //if data is empty
+    if (!data) {
+      throw new NotFoundException('No user found!');
+    }
 
-  //   //app sign in link
-  //   const signInLink = `#`;
-  //   // `${
-  //   //   this.configService.get('APP_ENV') === 'development'
-  //   //     ? this.configService.get('DEV_FRONTEND_DOMAIN')
-  //   //     : this.configService.get('PROD_FRONTEND_DOMAIN')
-  //   // }/signin`;
-  //   //send email for password change
+    //app sign in link
+    const signInLink = `#`;
+    // `${
+    //   this.configService.get('APP_ENV') === 'development'
+    //     ? this.configService.get('DEV_FRONTEND_DOMAIN')
+    //     : this.configService.get('PROD_FRONTEND_DOMAIN')
+    // }/signin`;
+    //send email for password change
 
-  //   // const cdnLink = await this.configService.get('PUBLIC_CDN');
-  //   const mainImage = `../../../assets/png-file/logo.png`;
+    // const cdnLink = await this.configService.get('PUBLIC_CDN');
+    const mainImage = `../../../assets/png-file/logo.png`;
 
-  //   const mailData = new QueueMailDto();
-  //   mailData.toMail = data.email;
-  //   mailData.subject = `Monitrix: Password Changed`;
-  //   mailData.template = './change-password';
-  //   mailData.context = {
-  //     signInLink: signInLink,
-  //     imgSrc: mainImage,
-  //   };
-  //   await this.queueMailService.sendMail(mailData);
+    const mailData = new QueueMailDto();
+    mailData.toMail = data.email;
+    mailData.subject = `Remove BG: Password Changed`;
+    mailData.template = './change-password';
+    mailData.context = {
+      signInLink: signInLink,
+      imgSrc: mainImage,
+    };
+    await this.queueMailService.sendMail(mailData);
 
-  //   return `Password changed successfully`;
-  // }
+    return `Password changed successfully`;
+  }
 
-  // //compare password
-  // async compareUserPassword(newPassword: string, oldPassword: string) {
-  //   const comparePass = bcrypt.compareSync(newPassword, oldPassword);
-  //   if (comparePass === false) {
-  //     throw new BadRequestException('Old password does not match');
-  //   }
-  //   return true;
-  // }
-  // //hash password
-  // async hashPassword(password: string) {
-  //   return bcrypt.hashSync(password, 10);
-  // }
+  //compare password
+  async compareUserPassword(newPassword: string, oldPassword: string) {
+    const comparePass = bcrypt.compareSync(newPassword, oldPassword);
+    if (comparePass === false) {
+      throw new BadRequestException('Old password does not match');
+    }
+    return true;
+  }
+  //hash password
+  async hashPassword(password: string) {
+    return bcrypt.hashSync(password, 10);
+  }
 
   // //validate user by email
   // async validateUserByEmail(email: string, id: number) {
