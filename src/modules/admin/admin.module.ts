@@ -24,9 +24,6 @@ import { PriceFixingController } from './price-fixing/price-fixing.controller';
 import { PriceFixingEntity } from './price-fixing/entity';
 import { OrderEntity } from '../user/order/entity/order.entity';
 import { UserModule } from '../user/user.module';
-import { ManualServiceEntity } from './manual-service/entity';
-import { ManualServiceController } from './manual-service/manual-service.controller';
-import { ManualService } from './manual-service/manual-service.service';
 /**controllers */
 /**Authentication strategies */
 @Module({
@@ -39,7 +36,6 @@ import { ManualService } from './manual-service/manual-service.service';
       PriceFixingEntity,
       OrderEntity,
       ApiPlanEntity,
-      ManualServiceEntity,
       PublicManualOrderEntity,
     ]),
     QueueMailModule,
@@ -52,7 +48,6 @@ import { ManualService } from './manual-service/manual-service.service';
     ActivityLogController,
     BlogController,
     PriceFixingController,
-    ManualServiceController,
   ],
   providers: [
     AdminService,
@@ -60,7 +55,6 @@ import { ManualService } from './manual-service/manual-service.service';
     ActivityLogService,
     BlogService,
     PriceFixingService,
-    ManualService,
   ],
   exports: [
     AdminService,
@@ -68,7 +62,6 @@ import { ManualService } from './manual-service/manual-service.service';
     ActivityLogService,
     PriceFixingService,
     BlogService,
-    ManualService,
   ],
 })
 export class AdminModule {}
