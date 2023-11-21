@@ -7,7 +7,7 @@ import {
   UpdateApiPlanDto,
   UpdatePlanDto,
 } from './dtos';
-import { ApiPlanEntity, PlanEntity } from './entity';
+import { ApiPlanEntity, PlanEntity, PublicManualOrderEntity } from './entity';
 import {
   Pagination,
   PaginationOptionsInterface,
@@ -25,6 +25,10 @@ import { BadRequestException } from '@nestjs/common';
 import { OrderEntity } from 'src/modules/user/order/entity/order.entity';
 import slugGenerator from 'src/helper/slugify.helper';
 import * as randToken from 'rand-token';
+import * as path from 'path';
+import { QueueMailDto } from 'src/modules/queue-mail/queue-mail.dto';
+import { QueueMailService } from 'src/modules/queue-mail/queue-mail.service';
+import { ManualServiceOrderDto } from 'src/public/manual-service/dto/manual-service-order.dto';
 
 export class PlanService {
   constructor(
@@ -32,6 +36,9 @@ export class PlanService {
     private planRepository: BaseRepository<PlanEntity>,
     @InjectRepository(ApiPlanEntity)
     private apiPlanRepository: BaseRepository<ApiPlanEntity>,
+    private readonly queueMailService: QueueMailService,
+    @InjectRepository(PublicManualOrderEntity)
+    private manualOrderRepository: BaseRepository<PublicManualOrderEntity>,
   ) {}
 
   //   create plan
@@ -533,5 +540,77 @@ export class PlanService {
       lifetime,
       month,
     };
+  }
+
+  // create manual doc
+
+  async createManualDoc(manualServiceOrderDto: ManualServiceOrderDto) {
+    const srcData = [];
+
+    for (let i = 0; i < manualServiceOrderDto.files.length; i++) {
+      //set upload parameter
+      const fileNameData = path.basename(
+        manualServiceOrderDto.files[i].originalname,
+        path.extname(manualServiceOrderDto.files[i].originalname),
+      );
+
+      srcData.push(fileNameData);
+    }
+
+    delete manualServiceOrderDto.files;
+
+    manualServiceOrderDto['src'] = srcData;
+
+    // mailing option
+
+    const mailData = new QueueMailDto();
+
+    mailData.toMail = 'noman@gmail.com';
+    mailData.subject = `RB: Manual Service Order`;
+    mailData.bodyHTML = `A Manual Order is Pending!!!!`;
+
+    //send email
+    await this.queueMailService.sendMail(mailData);
+
+    const data = await this.manualOrderRepository.save(manualServiceOrderDto);
+
+    return data;
+  }
+
+  // paginated manual service data for showing to public
+  async paginatedManualServiceForPublic(
+    listQueryParam: PaginationOptionsInterface,
+    filter: any,
+  ) {
+    const limit: number = listQueryParam.limit ? listQueryParam.limit : 10;
+    const page: number = listQueryParam.page
+      ? +listQueryParam.page == 1
+        ? 0
+        : listQueryParam.page
+      : 1;
+
+    const [results, total] = await this.planRepository
+      .createQueryBuilder('plan')
+      .where(
+        new Brackets((qb) => {
+          if (filter) {
+            qb.where(`plan.name ILIKE ('%${filter}%')`);
+          }
+        }),
+      )
+      .andWhere(`plan.status = '${StatusField.ACTIVE}'`)
+      .andWhere(`plan.packagePeriod = '${PackagePeriodEnum.MANUAL}'`)
+      .select(['plan.name', 'plan.price', 'plan.quantity'])
+      .orderBy('plan.id', 'DESC')
+      .take(limit)
+      .skip(page > 0 ? page * limit - limit : page)
+      .getManyAndCount();
+
+    return new Pagination<PlanEntity>({
+      results,
+      total,
+      currentPage: page === 0 ? 1 : page,
+      limit,
+    });
   }
 }

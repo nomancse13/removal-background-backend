@@ -6,6 +6,7 @@ import { AdminModule } from 'src/modules/admin/admin.module';
 import { PublicCommentController } from './comment/public-comment.controller';
 import { AuthenticationModule } from 'src/authentication/authentication.module';
 import { PublicPlanController } from './plan/public-plan.controller';
+import { PublicManualServiceController } from './manual-service/public-manual-service.controller';
 
 @Module({
   controllers: [
@@ -13,6 +14,7 @@ import { PublicPlanController } from './plan/public-plan.controller';
     PublicBlogController,
     PublicCommentController,
     PublicPlanController,
+    PublicManualServiceController,
   ],
   providers: [],
   imports: [BackgroundRemovalModule, AdminModule, AuthenticationModule],

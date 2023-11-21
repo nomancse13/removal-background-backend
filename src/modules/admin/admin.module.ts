@@ -6,7 +6,11 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { AuthModule } from 'src/authentication/auth/auth.module';
 import { SystemUserEntity } from './entities';
-import { ApiPlanEntity, PlanEntity } from './plan/entity';
+import {
+  ApiPlanEntity,
+  PlanEntity,
+  PublicManualOrderEntity,
+} from './plan/entity';
 import { PlanService } from './plan/plan.service';
 import { PlanController } from './plan/plan.controller';
 import { ActivityLogEntity } from './activity-log/entity';
@@ -20,6 +24,9 @@ import { PriceFixingController } from './price-fixing/price-fixing.controller';
 import { PriceFixingEntity } from './price-fixing/entity';
 import { OrderEntity } from '../user/order/entity/order.entity';
 import { UserModule } from '../user/user.module';
+import { ManualServiceEntity } from './manual-service/entity';
+import { ManualServiceController } from './manual-service/manual-service.controller';
+import { ManualService } from './manual-service/manual-service.service';
 /**controllers */
 /**Authentication strategies */
 @Module({
@@ -32,6 +39,8 @@ import { UserModule } from '../user/user.module';
       PriceFixingEntity,
       OrderEntity,
       ApiPlanEntity,
+      ManualServiceEntity,
+      PublicManualOrderEntity,
     ]),
     QueueMailModule,
     forwardRef(() => UserModule),
@@ -43,6 +52,7 @@ import { UserModule } from '../user/user.module';
     ActivityLogController,
     BlogController,
     PriceFixingController,
+    ManualServiceController,
   ],
   providers: [
     AdminService,
@@ -50,6 +60,7 @@ import { UserModule } from '../user/user.module';
     ActivityLogService,
     BlogService,
     PriceFixingService,
+    ManualService,
   ],
   exports: [
     AdminService,
@@ -57,6 +68,7 @@ import { UserModule } from '../user/user.module';
     ActivityLogService,
     PriceFixingService,
     BlogService,
+    ManualService,
   ],
 })
 export class AdminModule {}

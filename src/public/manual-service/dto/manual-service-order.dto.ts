@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
-export class CreateApiPlanDto {
+export class ManualServiceOrderDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -10,7 +10,7 @@ export class CreateApiPlanDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  slug: string;
+  email: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -19,6 +19,5 @@ export class CreateApiPlanDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsNumber()
-  price: number;
+  files: any;
 }
