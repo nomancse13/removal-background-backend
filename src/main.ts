@@ -47,7 +47,7 @@ async function bootstrap() {
   app.use(express.urlencoded({ extended: true }));
 
   const options = {
-    origin: 'http://127.0.0.1:3000',
+    origin: '192.168.68.114:3000',
     methods: 'GET,PUT,POST,DELETE,UPDATE,OPTIONS,PATCH',
     preflightContinue: false,
     optionsSuccessStatus: 204,

@@ -336,6 +336,7 @@ export class BackgroundRemovalService {
   // package function
   async asyncRemoveBackground(current: string, save: string) {
     try {
+      
       let command = `rembg i ${current} ${save}`;
 
       const { stdout, stderr } = await execAsync(command);

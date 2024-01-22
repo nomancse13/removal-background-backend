@@ -29,6 +29,11 @@
 ## Installation
 
 ```bash
+Install nvm from (https://github.com/coreybutler/nvm-windows/releases) and use node latest version
+Install Redis from (https://github.com/tporadowski/redis/releases)
+Install python version 3.9.0
+Then run below command
+$ pip install rembg[cli]
 $ yarn install
 ```
 
